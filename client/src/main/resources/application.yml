@@ -1,0 +1,7 @@
+server:
+  port: 8170
+client:
+  ip: 127.0.0.1
+
+scanner:
+     packages: api.service
