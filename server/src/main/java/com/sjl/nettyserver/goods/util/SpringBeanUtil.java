@@ -2,13 +2,19 @@ package com.sjl.nettyserver.goods.util;
 
 import com.google.gson.Gson;
 import com.sjl.nettyserver.goods.annotation.RpcService;
+import com.sjl.nettyserver.goods.annotation.SjlAutowired;
+import com.sjl.nettyserver.goods.pojo.Test;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeansException;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Controller;
 
+import javax.annotation.PostConstruct;
 import java.lang.annotation.Annotation;
+import java.lang.reflect.Field;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -28,13 +34,14 @@ public class SpringBeanUtil implements ApplicationContextAware {
     SpringBeanUtil.applicationContext = applicationContext;
   }
 
-  public static ConcurrentHashMap<String, Object> getBeansByAnnotation(Class<? extends Annotation>  clazz) {
+  public static ConcurrentHashMap<String, Object> getBeansByAnnotation(
+      Class<? extends Annotation> clazz) {
     ConcurrentHashMap<String, Object> handlerMap = new ConcurrentHashMap<>();
     try {
       if (clazz != null) {
         Map beans = SpringBeanUtil.applicationContext.getBeansWithAnnotation(clazz);
-        log.info("========beans 是:{}",new Gson().toJson(beans));
-        if (beans.size() > 0 && beans != null) {
+        log.info("========beans 是:{}", new Gson().toJson(beans));
+        if (beans != null && beans.size() > 0) {
           for (Object bean : beans.values()) {
             String interFaceName =
                 bean.getClass().getAnnotation(RpcService.class).value().getName();
@@ -48,5 +55,31 @@ public class SpringBeanUtil implements ApplicationContextAware {
       log.error("获取bean出现异常", e);
     }
     return new ConcurrentHashMap<>();
+  }
+
+
+  public static void doAutowired() {
+    System.out.println("===========开始自动注入bean属性");
+    Map beans = SpringBeanUtil.applicationContext.getBeansWithAnnotation(Controller.class);
+    beans
+        .entrySet()
+        .forEach(
+            o -> {
+              final Field[] fields = o.getClass().getDeclaredFields();
+              for (Field field : fields) {
+                System.out.println("field"+field.getType().getName());
+                if (field.isAnnotationPresent(SjlAutowired.class)) {
+                  //                  final SjlAutowired sjlAutowired =
+                  // field.getAnnotation(SjlAutowired.class);
+                  field.setAccessible(true);
+                  System.out.println("-----++++++++" + field.getType().getName());
+                  try {
+                    field.set(o, new Test("张三"));
+                  } catch (IllegalAccessException e) {
+                    e.printStackTrace();
+                  }
+                }
+              }
+            });
   }
 }

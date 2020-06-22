@@ -3,6 +3,7 @@ package com.sjl.nettyclient.order.proxy;
 import api.mode.RpcRequest;
 import api.mode.RpcResponse;
 import com.sjl.nettyclient.order.client.NettyClient;
+import lombok.extern.slf4j.Slf4j;
 
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
@@ -13,6 +14,7 @@ import java.util.UUID;
  * 代理类
  * @param <T>
  */
+@Slf4j
 public class RpcServiceProxy<T> implements InvocationHandler {
 
   private T target;
@@ -34,9 +36,9 @@ public class RpcServiceProxy<T> implements InvocationHandler {
     request.setMethodName(methodName);
     request.setParameters(args);
     request.setParameterTypes(method.getParameterTypes());
-    RpcResponse response = NettyClient.start(request);
+    RpcResponse response = NettyClient.rpcStart(request);
 
-    System.out.println("-->>>>>>>>"+response.getResult());
+    log.info("-->>>>>>>>:{}",response.getResult());
 
     return response.getResult();
   }

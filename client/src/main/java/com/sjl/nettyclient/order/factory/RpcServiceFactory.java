@@ -1,7 +1,6 @@
 package com.sjl.nettyclient.order.factory;
 
 import com.sjl.nettyclient.order.proxy.RpcServiceProxy;
-import org.apache.naming.factory.webservices.ServiceProxy;
 import org.springframework.beans.factory.FactoryBean;
 
 import java.lang.reflect.InvocationHandler;
