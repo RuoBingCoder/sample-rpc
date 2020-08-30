@@ -8,10 +8,10 @@
         <version>2.3.1.RELEASE</version>
         <relativePath/> <!-- lookup parent from repository -->
     </parent>
-    <groupId>com.sjl.netty-client</groupId>
-    <artifactId>order</artifactId>
+    <groupId>com.sjl.netty-server</groupId>
+    <artifactId>goods</artifactId>
     <version>0.0.1-SNAPSHOT</version>
-    <name>order</name>
+    <name>goods</name>
     <description>Demo project for Spring Boot</description>
 
     <properties>
@@ -23,6 +23,7 @@
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-web</artifactId>
         </dependency>
+
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-test</artifactId>
@@ -33,11 +34,6 @@
                     <artifactId>junit-vintage-engine</artifactId>
                 </exclusion>
             </exclusions>
-        </dependency>
-        <dependency>
-            <groupId>com.alibaba</groupId>
-            <artifactId>fastjson</artifactId>
-            <version>1.2.62</version>
         </dependency>
         <dependency>
             <groupId>com.sjl</groupId>
