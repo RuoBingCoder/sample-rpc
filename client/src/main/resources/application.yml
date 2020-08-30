@@ -3,5 +3,3 @@ server:
 client:
   ip: 127.0.0.1
 
-scanner:
-     packages: api.service
