@@ -1,2 +1,0 @@
-org.springframework.boot.SpringApplicationRunListener=\
-com.sjl.nettyclient.order.listen.RemoteConfigListener

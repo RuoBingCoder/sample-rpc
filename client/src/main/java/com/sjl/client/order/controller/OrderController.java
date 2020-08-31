@@ -3,6 +3,7 @@ package com.sjl.client.order.controller;
 import api.domain.Goods;
 import api.service.IGoodsService;
 import com.google.gson.Gson;
+import com.sjl.rpc.context.annotation.SjlReference;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -20,7 +21,8 @@ import java.util.List;
 @RequestMapping("/order")
 @Slf4j
 public class OrderController {
-  @Autowired private IGoodsService iGoodsService;
+  @SjlReference(value = IGoodsService.class,version = "1.0.0")
+  private IGoodsService iGoodsService;
 //  @Autowired
 //  private RpcServiceTest rpcServiceTest;
   @GetMapping("/getOrder")

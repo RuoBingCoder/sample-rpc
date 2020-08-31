@@ -55,6 +55,7 @@ public class NettyClient {
                 }
               });
       System.out.println("客户端ok...");
+      //TODO 注册中心待开发
       // 启动客户端连接服务器端
       ChannelFuture channelFuture = bootstrap.connect("127.0.0.1", 6366).sync();
       channelFuture.channel().writeAndFlush(request).sync();

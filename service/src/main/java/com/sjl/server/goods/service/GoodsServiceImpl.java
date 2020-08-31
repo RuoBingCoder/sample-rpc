@@ -13,7 +13,7 @@ import java.util.List;
  * @description:
  */
 
-@SjlRpcService(IGoodsService.class)
+@SjlRpcService(value = IGoodsService.class,version = "1.0.0")
 public class GoodsServiceImpl implements IGoodsService {
   @Override
   public List<Goods> getGoodsById(Long id) {

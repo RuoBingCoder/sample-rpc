@@ -18,7 +18,7 @@ public class NettyStart implements ApplicationListener<ContextRefreshedEvent> {
   public void onApplicationEvent(ContextRefreshedEvent contextRefreshedEvent) {
     if (contextRefreshedEvent.getApplicationContext().getParent() == null) {
       try {
-        NettyServer.remoteStart();
+        NettyServer.start();
         log.info("netty server start success!");
 
       } catch (Exception e) {

@@ -6,7 +6,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.ComponentScan;
 
 @SpringBootApplication
-@ComponentScan(basePackages = {"com.sjl.client.order","com.sjl.rpc.context"})
+@ComponentScan(basePackages = {"com.sjl.client","com.sjl.rpc.context"})
 @SjlRpcScan(basePackages = "api.service",type = "consumer")
 public class ClientApplication {
 

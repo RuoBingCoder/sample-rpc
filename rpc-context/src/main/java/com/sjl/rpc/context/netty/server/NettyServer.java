@@ -53,7 +53,7 @@ public class NettyServer {
                           .addLast(new NettyServerHandler(SpringBeanUtil.getBeansByAnnotation(SjlRpcService.class)));
                 }
               });
-
+        //TODO 注册中心待开发
       ChannelFuture future = serverBootstrap.bind(6366).sync();
       // 创建一个监听器 异步处理不会阻塞
       future.addListener(
