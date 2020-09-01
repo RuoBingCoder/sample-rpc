@@ -2,12 +2,9 @@ package com.sjl.rpc.context.spring.scanner;
 
 import com.alibaba.fastjson.JSONObject;
 import com.sjl.rpc.context.factory.RpcServiceBeanDefinitionRegistry;
-import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.support.BeanDefinitionRegistry;
 import org.springframework.context.annotation.ClassPathBeanDefinitionScanner;
-import org.springframework.context.annotation.ImportBeanDefinitionRegistrar;
-import org.springframework.core.io.ResourceLoader;
 
 import java.lang.annotation.Annotation;
 import java.util.Arrays;
@@ -83,7 +80,7 @@ public class RpcRegistryScanner extends ClassPathBeanDefinitionScanner {
      */
     if (strings.contains("consumer")) {
       log.info("consumer package is :{}", JSONObject.toJSONString(basePackages));
-      RpcServiceBeanDefinitionRegistry.scannerPackages =
+     RpcServiceBeanDefinitionRegistry.scannerPackages =
           strings.stream().filter(s -> s.startsWith("api")).collect(Collectors.joining());
       return 1;
     }

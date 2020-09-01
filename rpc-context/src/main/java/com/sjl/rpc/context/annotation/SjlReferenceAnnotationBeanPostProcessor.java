@@ -1,9 +1,9 @@
 package com.sjl.rpc.context.annotation;
 
-import com.alibaba.fastjson.JSONObject;
+import com.sjl.rpc.context.constants.Constant;
 import com.sjl.rpc.context.util.AnnotationUtil;
 import lombok.AllArgsConstructor;
-import lombok.NoArgsConstructor;
+import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.PropertyValues;
@@ -12,23 +12,21 @@ import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.BeanFactoryAware;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.annotation.InjectionMetadata;
+import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
 import org.springframework.beans.factory.config.InstantiationAwareBeanPostProcessorAdapter;
 import org.springframework.beans.factory.support.MergedBeanDefinitionPostProcessor;
 import org.springframework.beans.factory.support.RootBeanDefinition;
 import org.springframework.context.EnvironmentAware;
 import org.springframework.core.PriorityOrdered;
-import org.springframework.core.annotation.AnnotatedElementUtils;
 import org.springframework.core.annotation.AnnotationAttributes;
 import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Component;
 import org.springframework.util.ReflectionUtils;
 import org.springframework.util.StringUtils;
-import sun.reflect.annotation.AnnotationType;
 
 import java.beans.PropertyDescriptor;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
-import java.lang.reflect.Member;
 import java.lang.reflect.Modifier;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
@@ -52,6 +50,7 @@ public class SjlReferenceAnnotationBeanPostProcessor
         DisposableBean {
   private Class<? extends Annotation>[] annotationTypes = null;
   private Environment environment;
+  private ClassLoader classLoader;
   private static final int CACHE_SIZE = Integer.getInteger("", 32);
   private final ConcurrentMap<
           String, SjlReferenceAnnotationBeanPostProcessor.AnnotatedInjectionMetadata>
@@ -59,8 +58,14 @@ public class SjlReferenceAnnotationBeanPostProcessor
           new ConcurrentHashMap<>(
                   CACHE_SIZE);
 
+  private ConfigurableListableBeanFactory listableBeanFactory;
+
   public Environment getEnvironment() {
     return environment;
+  }
+
+  public ClassLoader getClassLoader() {
+    return classLoader;
   }
 
   public SjlReferenceAnnotationBeanPostProcessor() {
@@ -78,36 +83,65 @@ public class SjlReferenceAnnotationBeanPostProcessor
   }
 
   @Override
-  public void setBeanClassLoader(ClassLoader classLoader) {}
+  public void setBeanClassLoader(ClassLoader classLoader) {
+    this.classLoader=classLoader;
+  }
 
   @Override
-  public void setBeanFactory(BeanFactory beanFactory) throws BeansException {}
+  public void setBeanFactory(BeanFactory beanFactory) throws BeansException {
+    this.listableBeanFactory= (ConfigurableListableBeanFactory) beanFactory;
+  }
 
   @Override
-  public void destroy() throws Exception {}
+  public void destroy() throws Exception {
+    Constant.CACHE_SERVICE_ATTRIBUTES_MAP.clear();
+    injectionMetadataCache.clear();
+
+  }
 
   @Override
   public void postProcessMergedBeanDefinition(
-      RootBeanDefinition beanDefinition, Class<?> beanType, String beanName) {}
+      RootBeanDefinition beanDefinition, Class<?> beanType, String beanName) {
+   /* if (beanType != null) {
+      InjectionMetadata metadata = findInjectionMetadata(beanName, beanType, null);
+      metadata.checkConfigMembers(beanDefinition);
+    }*/
+  }
 
   @Override
-  public void setEnvironment(Environment environment) {}
+  public void setEnvironment(Environment environment) {
+    this.environment=environment;
+  }
 
   @Override
   public int getOrder() {
     return 0;
   }
 
+  @SneakyThrows
   @Override
   public PropertyValues postProcessPropertyValues(
       PropertyValues pvs, PropertyDescriptor[] pds, Object bean, String beanName)
       throws BeansException {
-
-
     InjectionMetadata metadata = findInjectionMetadata(beanName, bean.getClass(), pvs);
-    log.info("********************metadata is:{}",JSONObject.toJSONString(metadata.getClass().getName()));
+    log.info("------------begin--------------------");
+    injectionMetadataCache.forEach(
+        (s, annotatedInjectionMetadata) -> {
+          annotatedInjectionMetadata
+              .getFieldElements()
+              .forEach(
+                  annotatedFieldElement -> {
+                    System.out.println("ytyyyyyyyy:"+annotatedFieldElement.field.getType()+"->"+annotatedFieldElement.attributes);
+                    Constant.CACHE_SERVICE_ATTRIBUTES_MAP.put(annotatedFieldElement.field.getType().getName(),annotatedFieldElement.attributes);
 
-    //    return super.postProcessPropertyValues(pvs, pds, bean, beanName);
+                  });
+        });
+    log.info("------------end--------------------");
+  Class  interfaceClass = Class.forName("api.service.IGoodsService", true, Thread.currentThread()
+            .getContextClassLoader());
+  log.info("this the interfaceClass is:{}",interfaceClass.getName());
+//  metadata.inject(bean,beanName,pvs);
+
     return pvs;
   }
   private InjectionMetadata findInjectionMetadata(String beanName, Class<?> clazz, PropertyValues pvs) {
@@ -124,6 +158,7 @@ public class SjlReferenceAnnotationBeanPostProcessor
           }
           try {
             metadata = buildAnnotatedMetadata(clazz);
+//            log.info("---------cache key is:{}",cacheKey);
             this.injectionMetadataCache.put(cacheKey, metadata);
           } catch (NoClassDefFoundError err) {
             throw new IllegalStateException("Failed to introspect object class [" + clazz.getName() +
@@ -163,11 +198,12 @@ public class SjlReferenceAnnotationBeanPostProcessor
 
             AnnotationAttributes attributes =
                 AnnotationUtil.getMergedAttributes(field, annotationType, getEnvironment(), true);
-            log.info(
+            /*log.info(
                 "=====attributes is:{} field is:{} annotationType is:{} ",
                 JSONObject.toJSONString(attributes),
                 field.getName(),
-                annotationType.getName());
+                annotationType.getName());*/
+
             if (attributes != null) {
 
               if (Modifier.isStatic(field.getModifiers())) {

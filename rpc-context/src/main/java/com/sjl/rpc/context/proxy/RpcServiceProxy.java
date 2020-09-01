@@ -1,5 +1,6 @@
 package com.sjl.rpc.context.proxy;
 
+import com.sjl.rpc.context.constants.Constant;
 import com.sjl.rpc.context.mode.RpcRequest;
 import com.sjl.rpc.context.mode.RpcResponse;
 import com.sjl.rpc.context.netty.client.NettyClient;
@@ -27,17 +28,22 @@ public class RpcServiceProxy<T> implements InvocationHandler {
     System.out.println(method.getName()+"  "+method.getDeclaringClass().getName()+"   "+ Arrays.deepToString(args));
     String className = method.getDeclaringClass().getName();
     String methodName = method.getName();
+    System.out.println("======map size:"+Constant.CACHE_SERVICE_ATTRIBUTES_MAP.size());
+    Constant.CACHE_SERVICE_ATTRIBUTES_MAP.forEach((key, value) -> System.out.println("[" + key + "->" + value.toString() + "]"));
+    if (Constant.CACHE_SERVICE_ATTRIBUTES_MAP.containsKey(className)){
+      RpcRequest request = new RpcRequest();
+      request.setRequestId(UUID.randomUUID().toString());
+      request.setClassName(className);
+      request.setMethodName(methodName);
+      request.setParameters(args);
+      request.setParameterTypes(method.getParameterTypes());
+      request.setVersion((String) Constant.CACHE_SERVICE_ATTRIBUTES_MAP.get(className).get("version"));
+      RpcResponse response = NettyClient.start(request);
+      System.out.println("-->>>>>>>>"+response.getResult());
+      return response.getResult();
+    }
+    throw new RuntimeException("引用接口不存在");
 
-    RpcRequest request = new RpcRequest();
-    request.setRequestId(UUID.randomUUID().toString());
-    request.setClassName(className);
-    request.setMethodName(methodName);
-    request.setParameters(args);
-    request.setParameterTypes(method.getParameterTypes());
-    RpcResponse response = NettyClient.start(request);
 
-    System.out.println("-->>>>>>>>"+response.getResult());
-
-    return response.getResult();
   }
 }

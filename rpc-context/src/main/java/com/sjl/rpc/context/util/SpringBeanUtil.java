@@ -2,6 +2,7 @@ package com.sjl.rpc.context.util;
 
 import com.google.gson.Gson;
 import com.sjl.rpc.context.annotation.SjlRpcService;
+import com.sjl.rpc.context.zk.ZkConnect;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
@@ -9,6 +10,7 @@ import org.springframework.context.ApplicationContextAware;
 import org.springframework.stereotype.Component;
 
 import java.lang.annotation.Annotation;
+import java.net.InterfaceAddress;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -28,6 +30,7 @@ public class SpringBeanUtil implements ApplicationContextAware {
     SpringBeanUtil.applicationContext = applicationContext;
   }
 
+
   public static ConcurrentHashMap<String, Object> getBeansByAnnotation(Class<? extends Annotation>  clazz) {
     ConcurrentHashMap<String, Object> handlerMap = new ConcurrentHashMap<>();
     try {
@@ -42,6 +45,8 @@ public class SpringBeanUtil implements ApplicationContextAware {
 
             handlerMap.put(interFaceName, bean);
           }
+          //注册到zk上
+//          ZkConnect.instance().create().withMode("/rocket/service",new InterfaceAddress())
           return handlerMap;
         }
       }
@@ -49,5 +54,10 @@ public class SpringBeanUtil implements ApplicationContextAware {
       log.error("获取bean出现异常", e);
     }
     return new ConcurrentHashMap<>();
+  }
+
+  public static void main(String[] args) throws ClassNotFoundException {
+    Class<?> aClass = Class.forName("api.service.IGoodsService");
+    System.out.println(aClass.getName());
   }
 }

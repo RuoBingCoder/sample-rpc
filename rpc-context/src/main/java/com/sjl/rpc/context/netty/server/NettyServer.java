@@ -6,14 +6,18 @@ import com.sjl.rpc.context.codec.RpcEncoder;
 import com.sjl.rpc.context.mode.RpcRequest;
 import com.sjl.rpc.context.mode.RpcResponse;
 import com.sjl.rpc.context.util.SpringBeanUtil;
+import com.sjl.rpc.context.zk.provider.zk.ZkPublish;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.*;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.DependsOn;
 import org.springframework.stereotype.Component;
+
+import java.net.InetAddress;
 
 /**
  * @author: jianlei
@@ -23,6 +27,7 @@ import org.springframework.stereotype.Component;
 @Component
 @DependsOn("springBeanUtil")
 public class NettyServer {
+
 
   public  static void start() {
 
@@ -53,14 +58,16 @@ public class NettyServer {
                           .addLast(new NettyServerHandler(SpringBeanUtil.getBeansByAnnotation(SjlRpcService.class)));
                 }
               });
+      String bindAddr=InetAddress.getLocalHost().getHostAddress();
         //TODO 注册中心待开发
-      ChannelFuture future = serverBootstrap.bind(6366).sync();
+      ChannelFuture future = serverBootstrap.bind(bindAddr,8848).sync();
+
       // 创建一个监听器 异步处理不会阻塞
       future.addListener(
           (ChannelFutureListener)
               channelFuture -> {
                 if (channelFuture.isSuccess()) {
-                  System.out.println("监听端口是：6366");
+                  System.out.println("监听端口是：8848");
 
                 } else {
                   System.out.println("监听执行失败！");

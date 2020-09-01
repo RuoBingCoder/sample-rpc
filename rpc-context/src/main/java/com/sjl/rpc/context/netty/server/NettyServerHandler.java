@@ -1,8 +1,11 @@
 package com.sjl.rpc.context.netty.server;
 
 import com.google.gson.Gson;
+import com.sjl.rpc.context.annotation.SjlReference;
+import com.sjl.rpc.context.annotation.SjlRpcService;
 import com.sjl.rpc.context.mode.RpcRequest;
 import com.sjl.rpc.context.mode.RpcResponse;
+import com.sjl.rpc.context.util.SpringBeanUtil;
 import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
@@ -21,6 +24,9 @@ import java.util.concurrent.ConcurrentHashMap;
 @Slf4j
 public class NettyServerHandler extends SimpleChannelInboundHandler<RpcRequest> {
   private final ConcurrentHashMap<String, Object> handlerMap;
+
+
+  //注册到zk服务
 
   public NettyServerHandler(ConcurrentHashMap<String, Object> handlerMap) {
     this.handlerMap = handlerMap;
