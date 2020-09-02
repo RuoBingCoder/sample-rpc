@@ -37,6 +37,7 @@ public class NettyServer {
     try {
 
 
+      String bindAddr=InetAddress.getLocalHost().getHostAddress();
       ServerBootstrap serverBootstrap = new ServerBootstrap();
       serverBootstrap
           .group(bossGroup, workGroup)
@@ -55,10 +56,9 @@ public class NettyServer {
                           //将RPC请求进行编码（为了返回响应）
                           .addLast(new RpcEncoder(RpcResponse.class))
                           //处理RPC请求
-                          .addLast(new NettyServerHandler(SpringBeanUtil.getBeansByAnnotation(SjlRpcService.class)));
+                          .addLast(new NettyServerHandler(SpringBeanUtil.getBeansByAnnotation(SjlRpcService.class),bindAddr));
                 }
               });
-      String bindAddr=InetAddress.getLocalHost().getHostAddress();
         //TODO 注册中心待开发
       ChannelFuture future = serverBootstrap.bind(bindAddr,8848).sync();
 

@@ -6,6 +6,7 @@ import com.sjl.rpc.context.annotation.SjlRpcService;
 import com.sjl.rpc.context.mode.RpcRequest;
 import com.sjl.rpc.context.mode.RpcResponse;
 import com.sjl.rpc.context.util.SpringBeanUtil;
+import com.sjl.rpc.context.zk.provider.zk.ZkPublish;
 import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
@@ -27,9 +28,14 @@ public class NettyServerHandler extends SimpleChannelInboundHandler<RpcRequest> 
 
 
   //注册到zk服务
-
+  private String host;
   public NettyServerHandler(ConcurrentHashMap<String, Object> handlerMap) {
     this.handlerMap = handlerMap;
+  }
+
+  public NettyServerHandler(ConcurrentHashMap<String, Object> handlerMap, String host) {
+    this.handlerMap = handlerMap;
+    this.host = host;
   }
 
   @Override

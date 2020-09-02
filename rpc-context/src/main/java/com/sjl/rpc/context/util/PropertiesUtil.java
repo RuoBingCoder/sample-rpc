@@ -6,7 +6,7 @@ import java.util.Properties;
 /**
  * @author: JianLei
  * @date: 2020/9/1 4:49 下午
- * @description:
+ * @description: zk地址获取
  */
 
 public class PropertiesUtil {

@@ -56,6 +56,10 @@ public class SpringBeanUtil implements ApplicationContextAware {
     return new ConcurrentHashMap<>();
   }
 
+  public static <T> T getBean(Class<?> type){
+    return (T) SpringBeanUtil.applicationContext.getBean(type);
+  }
+
   public static void main(String[] args) throws ClassNotFoundException {
     Class<?> aClass = Class.forName("api.service.IGoodsService");
     System.out.println(aClass.getName());

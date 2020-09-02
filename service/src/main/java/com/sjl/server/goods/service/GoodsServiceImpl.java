@@ -13,11 +13,11 @@ import java.util.List;
  * @description:
  */
 
-@SjlRpcService(value = IGoodsService.class,version = "1.0.0")
+@SjlRpcService(value = IGoodsService.class,version = "1.0.1")
 public class GoodsServiceImpl implements IGoodsService {
   @Override
   public List<Goods> getGoodsById(Long id) {
-    Goods goods = Goods.builder().goodsId(String.valueOf(id)).goodsName("iphone").price("4999").build();
+    Goods goods = Goods.builder().goodsId(String.valueOf(id)).goodsName("xiaomi").price("1999").build();
 
     List<Goods> goodsList = new ArrayList<>();
     goodsList.add(goods);

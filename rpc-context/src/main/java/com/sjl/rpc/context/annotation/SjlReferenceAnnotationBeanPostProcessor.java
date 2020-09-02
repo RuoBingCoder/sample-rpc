@@ -123,25 +123,17 @@ public class SjlReferenceAnnotationBeanPostProcessor
   public PropertyValues postProcessPropertyValues(
       PropertyValues pvs, PropertyDescriptor[] pds, Object bean, String beanName)
       throws BeansException {
-    InjectionMetadata metadata = findInjectionMetadata(beanName, bean.getClass(), pvs);
-    log.info("------------begin--------------------");
+    findInjectionMetadata(beanName, bean.getClass(), pvs);
     injectionMetadataCache.forEach(
         (s, annotatedInjectionMetadata) -> {
           annotatedInjectionMetadata
               .getFieldElements()
               .forEach(
                   annotatedFieldElement -> {
-                    System.out.println("ytyyyyyyyy:"+annotatedFieldElement.field.getType()+"->"+annotatedFieldElement.attributes);
                     Constant.CACHE_SERVICE_ATTRIBUTES_MAP.put(annotatedFieldElement.field.getType().getName(),annotatedFieldElement.attributes);
 
                   });
         });
-    log.info("------------end--------------------");
-  Class  interfaceClass = Class.forName("api.service.IGoodsService", true, Thread.currentThread()
-            .getContextClassLoader());
-  log.info("this the interfaceClass is:{}",interfaceClass.getName());
-//  metadata.inject(bean,beanName,pvs);
-
     return pvs;
   }
   private InjectionMetadata findInjectionMetadata(String beanName, Class<?> clazz, PropertyValues pvs) {

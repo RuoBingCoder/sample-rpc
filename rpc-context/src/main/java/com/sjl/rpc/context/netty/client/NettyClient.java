@@ -2,8 +2,13 @@ package com.sjl.rpc.context.netty.client;
 
 import com.sjl.rpc.context.codec.RpcDecoder;
 import com.sjl.rpc.context.codec.RpcEncoder;
+import com.sjl.rpc.context.constants.Constant;
 import com.sjl.rpc.context.mode.RpcRequest;
 import com.sjl.rpc.context.mode.RpcResponse;
+import com.sjl.rpc.context.util.SpringBeanUtil;
+import com.sjl.rpc.context.zk.ZkConnect;
+import com.sjl.rpc.context.zk.loadbalance.LoadBlance;
+import com.sjl.rpc.context.zk.provider.zk.ZkPublish;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelInitializer;
@@ -11,7 +16,13 @@ import io.netty.channel.EventLoopGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioSocketChannel;
+import org.apache.curator.framework.CuratorFramework;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+
+import java.io.IOException;
+import java.net.InetAddress;
+import java.util.List;
 
 /**
  * @author: jianlei
@@ -20,11 +31,9 @@ import org.springframework.stereotype.Component;
  */
 @Component
 public class NettyClient {
+  @Autowired private ZkPublish zkPublish;
 
   public static RpcResponse rpcResponse;
-
-//  @Value("${client.ip}")
-//  private String clientIp;
 
   public static RpcResponse start(RpcRequest request) {
 
@@ -55,9 +64,10 @@ public class NettyClient {
                 }
               });
       System.out.println("客户端ok...");
-      //TODO 注册中心待开发
-      // 启动客户端连接服务器端
-      ChannelFuture channelFuture = bootstrap.connect("127.0.0.1", 6366).sync();
+      final ZkPublish zkPublish = SpringBeanUtil.getBean(ZkPublish.class);
+      final String providerHost =  zkPublish.getData(request);
+      System.out.println("获取host地址是:"+providerHost);
+      ChannelFuture channelFuture = bootstrap.connect(providerHost, 8848).sync();
       channelFuture.channel().writeAndFlush(request).sync();
       channelFuture.channel().closeFuture().sync();
 
@@ -69,4 +79,6 @@ public class NettyClient {
     }
     return rpcResponse == null ? new RpcResponse() : rpcResponse;
   }
+
+
 }

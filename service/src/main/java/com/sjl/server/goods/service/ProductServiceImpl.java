@@ -8,7 +8,7 @@ import com.sjl.rpc.context.annotation.SjlRpcService;
  * @date: 2020/9/1 3:28 下午
  * @description:
  */
-@SjlRpcService(value = IProductService.class,version = "1.0.0")
+@SjlRpcService(value = IProductService.class,version = "1.0.1")
 public class ProductServiceImpl implements IProductService {
     @Override
     public int count(Long productId) {

@@ -22,10 +22,10 @@ import java.util.List;
 @RequestMapping("/order")
 @Slf4j
 public class OrderController {
-  @SjlReference(value = IGoodsService.class, version = "1.0.0")
+  @SjlReference(value = IGoodsService.class, version = "1.0.1")
   private IGoodsService iGoodsService;
 
-  @SjlReference(value = IProductService.class, version = "1.0.0")
+  @SjlReference(value = IProductService.class, version = "1.0.1")
   private IProductService iProductService;
 
   //  @Autowired
