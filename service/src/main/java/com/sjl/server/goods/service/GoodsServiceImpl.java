@@ -2,7 +2,7 @@ package com.sjl.server.goods.service;
 
 import api.domain.Goods;
 import api.service.IGoodsService;
-import com.sjl.rpc.context.annotation.SjlRpcService;
+import com.sjl.rpc.context.annotation.RpcService;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -13,7 +13,7 @@ import java.util.List;
  * @description:
  */
 
-@SjlRpcService(value = IGoodsService.class,version = "1.0.1")
+@RpcService(value = IGoodsService.class,version = "1.0.1")
 public class GoodsServiceImpl implements IGoodsService {
   @Override
   public List<Goods> getGoodsById(Long id) {

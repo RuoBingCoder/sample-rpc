@@ -20,6 +20,8 @@ public class Constant {
   public static String ZK_ADDRESS_PREFIX ="zk.addr";
 
   public static String ROOT_PATH="/rocket/";
+  public static final String PROVIDER = "provider";
+  public static final String CONSUMER = "consumer";
 
 
 }

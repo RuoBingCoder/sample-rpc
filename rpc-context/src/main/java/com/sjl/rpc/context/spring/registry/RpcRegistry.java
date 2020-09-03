@@ -1,7 +1,7 @@
 package com.sjl.rpc.context.spring.registry;
 
-import com.sjl.rpc.context.annotation.SjlRpcScan;
-import com.sjl.rpc.context.annotation.SjlRpcService;
+import com.sjl.rpc.context.annotation.RpcInterfacesScan;
+import com.sjl.rpc.context.annotation.RpcService;
 import com.sjl.rpc.context.spring.scanner.RpcRegistryScanner;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.support.BeanDefinitionRegistry;
@@ -10,7 +10,6 @@ import org.springframework.context.ApplicationContextAware;
 import org.springframework.context.ResourceLoaderAware;
 import org.springframework.context.annotation.ImportBeanDefinitionRegistrar;
 import org.springframework.core.annotation.AnnotationAttributes;
-import org.springframework.core.io.Resource;
 import org.springframework.core.io.ResourceLoader;
 import org.springframework.core.type.AnnotationMetadata;
 import org.springframework.core.type.filter.AnnotationTypeFilter;
@@ -42,7 +41,7 @@ public class RpcRegistry implements ImportBeanDefinitionRegistrar, ResourceLoade
     @Override
     public void registerBeanDefinitions(AnnotationMetadata annotationMetadata, BeanDefinitionRegistry registry) {
         AnnotationAttributes mapperScanAttrs = AnnotationAttributes
-                .fromMap(annotationMetadata.getAnnotationAttributes(SjlRpcScan.class.getName()));
+                .fromMap(annotationMetadata.getAnnotationAttributes(RpcInterfacesScan.class.getName()));
         if (mapperScanAttrs != null) {
             registerBeanDefinitions(mapperScanAttrs, registry, generateBaseBeanName(annotationMetadata, 0));
         }
@@ -69,7 +68,7 @@ public class RpcRegistry implements ImportBeanDefinitionRegistrar, ResourceLoade
         scanner.setBasePackage(StringUtils.collectionToCommaDelimitedString(basePackages));
 
         //对标有SjlRpcService注解的类进行注册条件过滤
-        scanner.addIncludeFilter(new AnnotationTypeFilter(SjlRpcService.class));
+        scanner.addIncludeFilter(new AnnotationTypeFilter(RpcService.class));
         scanner.scan(StringUtils.toStringArray(basePackages));
 
 

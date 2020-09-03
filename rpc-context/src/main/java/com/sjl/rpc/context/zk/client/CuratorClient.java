@@ -20,7 +20,7 @@ public class CuratorClient {
 
   private static CuratorFramework curatorFramework;
 
-  public static synchronized CuratorFramework instance() throws IOException {
+  public static synchronized CuratorFramework instance() {
     if (curatorFramework == null) {
       log.info("------------------------开始创建ZK连接---------------------------------");
       try {

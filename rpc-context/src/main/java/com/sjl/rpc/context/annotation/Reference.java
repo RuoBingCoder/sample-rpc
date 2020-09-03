@@ -5,7 +5,7 @@ import java.lang.annotation.*;
 @Target({ElementType.FIELD})
 @Retention(RetentionPolicy.RUNTIME)
 @Documented
-public @interface SjlReference {
+public @interface Reference {
     Class<?> value() ;
     String name() default "";
 

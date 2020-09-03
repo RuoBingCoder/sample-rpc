@@ -1,6 +1,6 @@
 package com.sjl.rpc.context.netty.server;
 
-import com.sjl.rpc.context.annotation.SjlRpcService;
+import com.sjl.rpc.context.annotation.RpcService;
 import com.sjl.rpc.context.codec.RpcDecoder;
 import com.sjl.rpc.context.codec.RpcEncoder;
 import com.sjl.rpc.context.mode.RpcRequest;
@@ -53,7 +53,7 @@ public class NettyServer {
                           //将RPC请求进行编码（为了返回响应）
                           .addLast(new RpcEncoder(RpcResponse.class))
                           //处理RPC请求
-                          .addLast(new NettyServerHandler(SpringBeanUtil.getBeansByAnnotation(SjlRpcService.class),bindAddr));
+                          .addLast(new NettyServerHandler(SpringBeanUtil.getBeansByAnnotation(RpcService.class),bindAddr));
                 }
               });
         //TODO 注册中心待开发

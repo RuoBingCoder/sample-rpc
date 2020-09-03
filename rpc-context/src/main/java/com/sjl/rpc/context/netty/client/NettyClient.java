@@ -23,8 +23,6 @@ import org.springframework.stereotype.Component;
  */
 @Component
 public class NettyClient {
-  @Autowired private RpcHandler zkPublish;
-
   public static RpcResponse rpcResponse;
 
   public static RpcResponse start(RpcRequest request) {

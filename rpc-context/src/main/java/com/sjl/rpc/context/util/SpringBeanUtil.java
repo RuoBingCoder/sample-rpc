@@ -1,7 +1,7 @@
 package com.sjl.rpc.context.util;
 
 import com.google.gson.Gson;
-import com.sjl.rpc.context.annotation.SjlRpcService;
+import com.sjl.rpc.context.annotation.RpcService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
@@ -39,7 +39,7 @@ public class SpringBeanUtil implements ApplicationContextAware {
         if (beans.size() > 0 && beans != null) {
           for (Object bean : beans.values()) {
             String interFaceName =
-                bean.getClass().getAnnotation(SjlRpcService.class).value().getName();
+                bean.getClass().getAnnotation(RpcService.class).value().getName();
 
             handlerMap.put(interFaceName, bean);
           }
@@ -59,7 +59,7 @@ public class SpringBeanUtil implements ApplicationContextAware {
   }
 
   public static void main(String[] args) throws ClassNotFoundException {
-    Class<?> aClass = Class.forName("api.service.IGoodsService");
+    Class<?> aClass = Class.forName("api.service.IGoodsService",true,Thread.currentThread().getContextClassLoader());
     System.out.println(aClass.getName());
   }
 }

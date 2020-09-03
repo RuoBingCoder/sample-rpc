@@ -4,9 +4,8 @@ import api.domain.Goods;
 import api.service.IGoodsService;
 import api.service.IProductService;
 import com.google.gson.Gson;
-import com.sjl.rpc.context.annotation.SjlReference;
+import com.sjl.rpc.context.annotation.Reference;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -22,10 +21,10 @@ import java.util.List;
 @RequestMapping("/order")
 @Slf4j
 public class OrderController {
-  @SjlReference(value = IGoodsService.class, version = "1.0.1")
+  @Reference(value = IGoodsService.class, version = "1.0.1")
   private IGoodsService iGoodsService;
 
-  @SjlReference(value = IProductService.class, version = "1.0.1")
+  @Reference(value = IProductService.class, version = "1.0.1")
   private IProductService iProductService;
 
   //  @Autowired

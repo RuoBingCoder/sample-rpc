@@ -40,7 +40,7 @@ import java.util.concurrent.ConcurrentMap;
 @Component
 @Slf4j
 @AllArgsConstructor
-public class SjlReferenceAnnotationBeanPostProcessor
+public class ReferenceAnnotationBeanPostProcessor
     extends InstantiationAwareBeanPostProcessorAdapter
     implements MergedBeanDefinitionPostProcessor,
         PriorityOrdered,
@@ -53,7 +53,7 @@ public class SjlReferenceAnnotationBeanPostProcessor
   private ClassLoader classLoader;
   private static final int CACHE_SIZE = Integer.getInteger("", 32);
   private final ConcurrentMap<
-          String, SjlReferenceAnnotationBeanPostProcessor.AnnotatedInjectionMetadata>
+          String, ReferenceAnnotationBeanPostProcessor.AnnotatedInjectionMetadata>
       injectionMetadataCache =
           new ConcurrentHashMap<>(
                   CACHE_SIZE);
@@ -68,10 +68,10 @@ public class SjlReferenceAnnotationBeanPostProcessor
     return classLoader;
   }
 
-  public SjlReferenceAnnotationBeanPostProcessor() {
+  public ReferenceAnnotationBeanPostProcessor() {
 
     this.annotationTypes =
-        new Class[] {SjlReference.class, com.sjl.rpc.context.annotation.SjlReference.class};
+        new Class[] {Reference.class, Reference.class};
   }
 
   public Class<? extends Annotation>[] getAnnotationTypes() {
@@ -136,7 +136,7 @@ public class SjlReferenceAnnotationBeanPostProcessor
     // Fall back to class name as cache key, for backwards compatibility with custom callers.
     String cacheKey = (StringUtils.hasLength(beanName) ? beanName : clazz.getName());
     // Quick check on the concurrent map first, with minimal locking.
-    SjlReferenceAnnotationBeanPostProcessor.AnnotatedInjectionMetadata metadata = this.injectionMetadataCache.get(cacheKey);
+    ReferenceAnnotationBeanPostProcessor.AnnotatedInjectionMetadata metadata = this.injectionMetadataCache.get(cacheKey);
     if (InjectionMetadata.needsRefresh(metadata, clazz)) {
       synchronized (this.injectionMetadataCache) {
         metadata = this.injectionMetadataCache.get(cacheKey);
@@ -174,9 +174,9 @@ public class SjlReferenceAnnotationBeanPostProcessor
 
   
 
-  public List<SjlReferenceAnnotationBeanPostProcessor.AnnotatedFieldElement> findFieldAnnotationMetadata(
+  public List<ReferenceAnnotationBeanPostProcessor.AnnotatedFieldElement> findFieldAnnotationMetadata(
        Class<?> clazz) {
-    final List<SjlReferenceAnnotationBeanPostProcessor.AnnotatedFieldElement> elements =
+    final List<ReferenceAnnotationBeanPostProcessor.AnnotatedFieldElement> elements =
         new LinkedList<>();
 
     ReflectionUtils.doWithFields(
@@ -208,23 +208,23 @@ public class SjlReferenceAnnotationBeanPostProcessor
 
 
 
-  private SjlReferenceAnnotationBeanPostProcessor.AnnotatedInjectionMetadata buildAnnotatedMetadata(final Class<?> beanClass) {
-    Collection<SjlReferenceAnnotationBeanPostProcessor.AnnotatedFieldElement> fieldElements = findFieldAnnotationMetadata(beanClass);
-    return new SjlReferenceAnnotationBeanPostProcessor.AnnotatedInjectionMetadata(beanClass, fieldElements);
+  private ReferenceAnnotationBeanPostProcessor.AnnotatedInjectionMetadata buildAnnotatedMetadata(final Class<?> beanClass) {
+    Collection<ReferenceAnnotationBeanPostProcessor.AnnotatedFieldElement> fieldElements = findFieldAnnotationMetadata(beanClass);
+    return new ReferenceAnnotationBeanPostProcessor.AnnotatedInjectionMetadata(beanClass, fieldElements);
 
   }
 
   private class AnnotatedInjectionMetadata extends InjectionMetadata {
 
-    private final Collection<SjlReferenceAnnotationBeanPostProcessor.AnnotatedFieldElement> fieldElements;
+    private final Collection<ReferenceAnnotationBeanPostProcessor.AnnotatedFieldElement> fieldElements;
 
 
-    public AnnotatedInjectionMetadata(Class<?> targetClass, Collection<SjlReferenceAnnotationBeanPostProcessor.AnnotatedFieldElement> fieldElements) {
+    public AnnotatedInjectionMetadata(Class<?> targetClass, Collection<ReferenceAnnotationBeanPostProcessor.AnnotatedFieldElement> fieldElements) {
       super(targetClass, combine(fieldElements));
       this.fieldElements = fieldElements;
     }
 
-    public Collection<SjlReferenceAnnotationBeanPostProcessor.AnnotatedFieldElement> getFieldElements() {
+    public Collection<ReferenceAnnotationBeanPostProcessor.AnnotatedFieldElement> getFieldElements() {
       return fieldElements;
     }
 

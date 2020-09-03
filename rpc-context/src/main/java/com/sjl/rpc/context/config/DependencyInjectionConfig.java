@@ -1,6 +1,6 @@
 package com.sjl.rpc.context.config;
 
-import com.sjl.rpc.context.annotation.SjlReference;
+import com.sjl.rpc.context.annotation.Reference;
 import org.springframework.beans.factory.annotation.AutowiredAnnotationBeanPostProcessor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -21,7 +21,7 @@ public class DependencyInjectionConfig {
     @Scope
     public static AutowiredAnnotationBeanPostProcessor beanPostProcessor() {
         AutowiredAnnotationBeanPostProcessor beanPostProcessor = new AutowiredAnnotationBeanPostProcessor();
-        beanPostProcessor.setAutowiredAnnotationType(SjlReference.class);
+        beanPostProcessor.setAutowiredAnnotationType(Reference.class);
         return beanPostProcessor;
     }
 }
