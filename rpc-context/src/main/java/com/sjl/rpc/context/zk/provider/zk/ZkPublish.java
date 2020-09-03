@@ -35,7 +35,6 @@ public class ZkPublish extends BaseServiceOperate implements InitializingBean, D
 
   private static final Map<String, String> cacheServiceMap = new ConcurrentHashMap<>();
 
-
   @Override
   public void publishService() {
     final ConcurrentHashMap<String, Object> beans =
@@ -70,28 +69,47 @@ public class ZkPublish extends BaseServiceOperate implements InitializingBean, D
     final CuratorFramework instance = ZkConnect.instance();
     String providerHost;
     String serviceNameSpace =
-        Constant.ROOT_PATH + request.getClassName() + "&" + request.getVersion();
+         request.getClassName() + "&" + request.getVersion();
     if (cacheServiceMap.get(serviceNameSpace) != null) {
-      log.info("开始走缓存获取服务");
+      log.info("开始走缓存获取服务 服务名称为:{}",serviceNameSpace);
       return cacheServiceMap.get(serviceNameSpace);
     } else {
-      providerHost = doSelectService(instance, serviceNameSpace);
+      providerHost = doSelectService(instance, Constant.ROOT_PATH+serviceNameSpace);
       cacheServiceMap.put(serviceNameSpace, providerHost);
     }
-    PathChildrenCache pathChildrenCache = new PathChildrenCache(instance, serviceNameSpace, true);
+    PathChildrenCache pathChildrenCache = new PathChildrenCache(instance, Constant.ROOT_PATH+serviceNameSpace, true);
+    try {
+      // 当Cache初始化数据后发送一个PathChildrenCacheEvent.Type#INITIALIZED事件
+      pathChildrenCache.start(PathChildrenCache.StartMode.POST_INITIALIZED_EVENT);
+    } catch (Exception e) {
+      log.error("zk监听节点出现异常", e);
+      throw new RuntimeException("zk监听节点出现异常");
+    }
     PathChildrenCacheListener listener =
         (c, event) -> {
-          if (cacheServiceMap.containsKey(event.getData().getPath())) {
-            log.info(
-                "zk监听节点变化当前path:{} data是:{}",
-                event.getData().getPath(),
-                new String(event.getData().getData()));
-            cacheServiceMap.remove(event.getData().getPath());
-            cacheServiceMap.put(event.getData().getPath(), new String(event.getData().getData()));
+          log.info(
+              "zk监听节点变化当前path:{} data是:{}",
+              event.getData().getPath(),
+              new String(event.getData().getData()));
+          String serviceName = getServiceNameSpace(event.getData().getPath());
+          cacheServiceMap.forEach(
+              (s, s2) -> System.out.println("==>"+ s +"->"+ s2));
+          if (cacheServiceMap.containsKey(serviceName)) {
+            //更新缓存内容
+            cacheServiceMap.put(serviceName, new String(event.getData().getData()));
           }
         };
     pathChildrenCache.getListenable().addListener(listener);
+
     return providerHost;
+  }
+
+  private String getServiceNameSpace(String path) {
+    String path1 = path.replace(Constant.ROOT_PATH, "");
+    String[] split = path1.split("/");
+    log.info("获取节点变化后的server name 是:{}",split[0]);
+    return split[0];
+
   }
 
   private String doSelectService(CuratorFramework instance, String serviceNameSpace)
@@ -102,6 +120,7 @@ public class ZkPublish extends BaseServiceOperate implements InitializingBean, D
 
   @Override
   public void destroy() throws Exception {
+    log.info("============>>开始销毁cacheServiceMap<<===========");
     cacheServiceMap.clear();
   }
 

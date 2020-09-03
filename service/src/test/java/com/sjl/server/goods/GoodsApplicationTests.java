@@ -7,7 +7,9 @@ import org.springframework.boot.test.context.SpringBootTest;
 
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 @SpringBootTest
 class GoodsApplicationTests {
@@ -21,4 +23,10 @@ private IGoodsService iGoodsService;
     System.out.println("============>:"+iGoodsService.helloRpc("rpc"));
     }
 
+  public static void main(String[] args) {
+    Map<String, Object> map=new ConcurrentHashMap<>();
+    map.put("1","123");
+    map.put("1","234");
+    System.out.println(map.get("1"));
+  }
 }
