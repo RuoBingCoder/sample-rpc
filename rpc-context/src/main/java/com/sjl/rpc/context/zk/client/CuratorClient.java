@@ -1,4 +1,4 @@
-package com.sjl.rpc.context.zk;
+package com.sjl.rpc.context.zk.client;
 
 import com.sjl.rpc.context.constants.Constant;
 import com.sjl.rpc.context.util.PropertiesUtil;
@@ -16,23 +16,24 @@ import java.io.IOException;
  * @description: zk注册
  */
 @Slf4j
-public class ZkConnect {
-
+public class CuratorClient {
 
   private static CuratorFramework curatorFramework;
+
   public static synchronized CuratorFramework instance() throws IOException {
     if (curatorFramework == null) {
       log.info("------------------------开始创建ZK连接---------------------------------");
-      curatorFramework =
-          CuratorFrameworkFactory.newClient(
-              PropertiesUtil.getZkAddr(Constant.ZK_ADDRESS_PREFIX),
-              new ExponentialBackoffRetry(1000, 3));
-      curatorFramework.start();
+      try {
+        curatorFramework =
+            CuratorFrameworkFactory.newClient(
+                PropertiesUtil.getZkAddr(Constant.ZK_ADDRESS_PREFIX),
+                new ExponentialBackoffRetry(1000, 3));
+        curatorFramework.start();
+      } catch (Exception e) {
+        log.error("ZK启动异常", e);
+      }
       log.info("------------------------curator 启动成功！---------------------------------");
-
-
     }
     return curatorFramework;
   }
-
 }

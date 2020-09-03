@@ -8,7 +8,7 @@ import java.util.List;
  * @date: 2020/9/2
  * @description: 负载均衡
  */
-public class LoadBlance {
+public class LoadBalance {
 
   private static int i = 0;
 

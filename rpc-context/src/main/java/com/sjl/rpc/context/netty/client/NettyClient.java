@@ -2,13 +2,10 @@ package com.sjl.rpc.context.netty.client;
 
 import com.sjl.rpc.context.codec.RpcDecoder;
 import com.sjl.rpc.context.codec.RpcEncoder;
-import com.sjl.rpc.context.constants.Constant;
 import com.sjl.rpc.context.mode.RpcRequest;
 import com.sjl.rpc.context.mode.RpcResponse;
 import com.sjl.rpc.context.util.SpringBeanUtil;
-import com.sjl.rpc.context.zk.ZkConnect;
-import com.sjl.rpc.context.zk.loadbalance.LoadBlance;
-import com.sjl.rpc.context.zk.provider.zk.ZkPublish;
+import com.sjl.rpc.context.zk.handle.zk.RpcHandler;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelInitializer;
@@ -16,13 +13,8 @@ import io.netty.channel.EventLoopGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioSocketChannel;
-import org.apache.curator.framework.CuratorFramework;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-
-import java.io.IOException;
-import java.net.InetAddress;
-import java.util.List;
 
 /**
  * @author: jianlei
@@ -31,7 +23,7 @@ import java.util.List;
  */
 @Component
 public class NettyClient {
-  @Autowired private ZkPublish zkPublish;
+  @Autowired private RpcHandler zkPublish;
 
   public static RpcResponse rpcResponse;
 
@@ -60,13 +52,10 @@ public class NettyClient {
                       /*使用NettyClientHandler发送RPC请求*/
                       .addLast(new NettyClientHandler());
 
-                  // 加入自己的处理器
                 }
               });
-      System.out.println("客户端ok...");
-      final ZkPublish zkPublish = SpringBeanUtil.getBean(ZkPublish.class);
-      final String providerHost =  zkPublish.getData(request);
-      System.out.println("获取host地址是:"+providerHost);
+      final RpcHandler zkPublish = SpringBeanUtil.getBean(RpcHandler.class);
+      final String providerHost =  zkPublish.getChildNodeData(request);
       ChannelFuture channelFuture = bootstrap.connect(providerHost, 8848).sync();
       channelFuture.channel().writeAndFlush(request).sync();
       channelFuture.channel().closeFuture().sync();

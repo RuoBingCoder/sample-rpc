@@ -2,7 +2,6 @@ package com.sjl.rpc.context.util;
 
 import com.google.gson.Gson;
 import com.sjl.rpc.context.annotation.SjlRpcService;
-import com.sjl.rpc.context.zk.ZkConnect;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
@@ -10,7 +9,6 @@ import org.springframework.context.ApplicationContextAware;
 import org.springframework.stereotype.Component;
 
 import java.lang.annotation.Annotation;
-import java.net.InterfaceAddress;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 

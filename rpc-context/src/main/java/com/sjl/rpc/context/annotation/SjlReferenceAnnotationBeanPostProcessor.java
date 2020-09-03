@@ -35,7 +35,7 @@ import java.util.concurrent.ConcurrentMap;
 /**
  * @author: JianLei
  * @date: 2020/8/31 5:03 下午
- * @description:
+ * @description: 主要是获取自定义注解信息,仿照@Autowired原理
  */
 @Component
 @Slf4j
@@ -102,10 +102,6 @@ public class SjlReferenceAnnotationBeanPostProcessor
   @Override
   public void postProcessMergedBeanDefinition(
       RootBeanDefinition beanDefinition, Class<?> beanType, String beanName) {
-   /* if (beanType != null) {
-      InjectionMetadata metadata = findInjectionMetadata(beanName, beanType, null);
-      metadata.checkConfigMembers(beanDefinition);
-    }*/
   }
 
   @Override
@@ -190,12 +186,6 @@ public class SjlReferenceAnnotationBeanPostProcessor
 
             AnnotationAttributes attributes =
                 AnnotationUtil.getMergedAttributes(field, annotationType, getEnvironment(), true);
-            /*log.info(
-                "=====attributes is:{} field is:{} annotationType is:{} ",
-                JSONObject.toJSONString(attributes),
-                field.getName(),
-                annotationType.getName());*/
-
             if (attributes != null) {
 
               if (Modifier.isStatic(field.getModifiers())) {

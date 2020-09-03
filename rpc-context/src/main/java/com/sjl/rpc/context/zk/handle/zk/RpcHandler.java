@@ -1,13 +1,13 @@
-package com.sjl.rpc.context.zk.provider.zk;
+package com.sjl.rpc.context.zk.handle.zk;
 
 import com.sjl.rpc.context.annotation.SjlRpcService;
 import com.sjl.rpc.context.constants.Constant;
+import com.sjl.rpc.context.exception.RpcException;
 import com.sjl.rpc.context.mode.RpcRequest;
 import com.sjl.rpc.context.util.SpringBeanUtil;
-import com.sjl.rpc.context.zk.ZkConnect;
-import com.sjl.rpc.context.zk.loadbalance.LoadBlance;
-import com.sjl.rpc.context.zk.provider.BaseServiceOperate;
-import lombok.Value;
+import com.sjl.rpc.context.zk.client.CuratorClient;
+import com.sjl.rpc.context.zk.loadbalance.LoadBalance;
+import com.sjl.rpc.context.zk.handle.abs.BaseServiceOperate;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.curator.framework.CuratorFramework;
 import org.apache.curator.framework.recipes.cache.PathChildrenCache;
@@ -19,6 +19,7 @@ import org.springframework.context.annotation.DependsOn;
 import org.springframework.stereotype.Component;
 
 import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -31,7 +32,7 @@ import java.util.concurrent.ConcurrentHashMap;
 @Component
 @DependsOn("springBeanUtil")
 @Slf4j
-public class ZkPublish extends BaseServiceOperate implements InitializingBean, DisposableBean {
+public class RpcHandler extends BaseServiceOperate implements InitializingBean, DisposableBean {
 
   private static final Map<String, String> cacheServiceMap = new ConcurrentHashMap<>();
 
@@ -45,31 +46,41 @@ public class ZkPublish extends BaseServiceOperate implements InitializingBean, D
             final SjlRpcService sjlRpcService = bean.getClass().getAnnotation(SjlRpcService.class);
             final String version = sjlRpcService.version();
             if (!"".equals(version)) {
-              if (!cacheServiceMap.containsKey(beanName + "&" + version)
-                  || ZkConnect.instance().checkExists().forPath(beanName + "&" + version) == null) {
-                createServicePath(ZkConnect.instance(), beanName + "&" + version);
+              if (!cacheServiceMap.containsKey(handleServiceName(beanName,version))
+                  || CuratorClient.instance().checkExists().forPath(handleServiceName(beanName,version)) == null) {
+                createServicePath(CuratorClient.instance(), handleServiceName(beanName,version));
               } else {
                 cacheServiceMap.put(
                     beanName + "&" + version, InetAddress.getLocalHost().getHostAddress());
               }
             }
           } catch (Exception e) {
-            log.error("发布服务出现异常", e);
+            log.error("====>发布服务出现异常", e);
+            throw new RpcException("发布服务出现异常");
           }
         });
   }
 
   private void createServicePath(CuratorFramework curator, String serviceName) throws Exception {
-    String servicePath =
-        Constant.ROOT_PATH + serviceName + "/" + InetAddress.getLocalHost().getHostAddress();
-    curator.create().creatingParentsIfNeeded().withMode(CreateMode.PERSISTENT).forPath(servicePath);
+    String servicePath = handleZkNodePath(serviceName);
+     try {
+       curator.create().creatingParentsIfNeeded().withMode(CreateMode.PERSISTENT).forPath(servicePath);
+     } catch (Exception e) {
+       log.error("====>create zk node error!error message is:",e);
+       throw new RpcException("创建节点异常");
+
+
+     }
+  }
+  private String handleZkNodePath(String serviceName) throws UnknownHostException {
+    return Constant.ROOT_PATH + serviceName + "/" + InetAddress.getLocalHost().getHostAddress();
   }
 
-  public String getData(RpcRequest request) throws Exception {
-    final CuratorFramework instance = ZkConnect.instance();
+  public String getChildNodeData(RpcRequest request) throws Exception {
+    final CuratorFramework instance = CuratorClient.instance();
     String providerHost;
     String serviceNameSpace =
-         request.getClassName() + "&" + request.getVersion();
+         handleServiceName(request.getClassName(), request.getVersion());
     if (cacheServiceMap.get(serviceNameSpace) != null) {
       log.info("开始走缓存获取服务 服务名称为:{}",serviceNameSpace);
       return cacheServiceMap.get(serviceNameSpace);
@@ -83,7 +94,7 @@ public class ZkPublish extends BaseServiceOperate implements InitializingBean, D
       pathChildrenCache.start(PathChildrenCache.StartMode.POST_INITIALIZED_EVENT);
     } catch (Exception e) {
       log.error("zk监听节点出现异常", e);
-      throw new RuntimeException("zk监听节点出现异常");
+      throw new RpcException("zk监听节点出现异常");
     }
     PathChildrenCacheListener listener =
         (c, event) -> {
@@ -92,8 +103,6 @@ public class ZkPublish extends BaseServiceOperate implements InitializingBean, D
               event.getData().getPath(),
               new String(event.getData().getData()));
           String serviceName = getServiceNameSpace(event.getData().getPath());
-          cacheServiceMap.forEach(
-              (s, s2) -> System.out.println("==>"+ s +"->"+ s2));
           if (cacheServiceMap.containsKey(serviceName)) {
             //更新缓存内容
             cacheServiceMap.put(serviceName, new String(event.getData().getData()));
@@ -115,7 +124,11 @@ public class ZkPublish extends BaseServiceOperate implements InitializingBean, D
   private String doSelectService(CuratorFramework instance, String serviceNameSpace)
       throws Exception {
     final List<String> serviceHosts = instance.getChildren().forPath(serviceNameSpace);
-    return LoadBlance.selectService(serviceHosts);
+    return LoadBalance.selectService(serviceHosts);
+  }
+
+  private String handleServiceName(String name,String version){
+    return name+"&"+version;
   }
 
   @Override
