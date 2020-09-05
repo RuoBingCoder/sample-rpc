@@ -11,7 +11,7 @@ import org.springframework.core.annotation.Order;
 /**
  * @author: JianLei
  * @date: 2020/8/31 3:46 下午
- * @description:
+ * @description: 注解依赖注入
  */
 @Configuration
 public class DependencyInjectionConfig {

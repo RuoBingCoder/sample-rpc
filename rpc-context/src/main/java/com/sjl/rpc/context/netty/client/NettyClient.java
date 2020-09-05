@@ -1,5 +1,6 @@
 package com.sjl.rpc.context.netty.client;
 
+import com.alibaba.fastjson.JSONObject;
 import com.sjl.rpc.context.codec.RpcDecoder;
 import com.sjl.rpc.context.codec.RpcEncoder;
 import com.sjl.rpc.context.mode.RpcRequest;
@@ -13,8 +14,11 @@ import io.netty.channel.EventLoopGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioSocketChannel;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+
+import java.util.Arrays;
 
 /**
  * @author: jianlei
@@ -22,6 +26,7 @@ import org.springframework.stereotype.Component;
  * @description: NettyClient
  */
 @Component
+@Slf4j
 public class NettyClient {
   public static RpcResponse rpcResponse;
 
@@ -53,8 +58,9 @@ public class NettyClient {
                 }
               });
       final RpcHandler zkPublish = SpringBeanUtil.getBean(RpcHandler.class);
-      final String providerHost =  zkPublish.getChildNodeData(request);
-      ChannelFuture channelFuture = bootstrap.connect(providerHost, 8848).sync();
+      final String[] providerHost =  zkPublish.getChildNodeData(request).split(":");
+      log.info("获取远程服务地址是:{}", JSONObject.toJSONString(providerHost));
+      ChannelFuture channelFuture = bootstrap.connect(providerHost[0], Integer.parseInt(providerHost[1])).sync();
       channelFuture.channel().writeAndFlush(request).sync();
       channelFuture.channel().closeFuture().sync();
 

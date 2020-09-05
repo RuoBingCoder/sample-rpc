@@ -3,6 +3,7 @@ package com.sjl.rpc.context.netty.server;
 import com.sjl.rpc.context.annotation.RpcService;
 import com.sjl.rpc.context.codec.RpcDecoder;
 import com.sjl.rpc.context.codec.RpcEncoder;
+import com.sjl.rpc.context.constants.Constant;
 import com.sjl.rpc.context.mode.RpcRequest;
 import com.sjl.rpc.context.mode.RpcResponse;
 import com.sjl.rpc.context.util.SpringBeanUtil;
@@ -14,6 +15,7 @@ import io.netty.channel.socket.nio.NioServerSocketChannel;
 import org.springframework.context.annotation.DependsOn;
 import org.springframework.stereotype.Component;
 
+import javax.annotation.PostConstruct;
 import java.net.InetAddress;
 
 /**
@@ -25,16 +27,15 @@ import java.net.InetAddress;
 @DependsOn("springBeanUtil")
 public class NettyServer {
 
-
-  public  static void start() {
+//  @PostConstruct
+  public static void start() {
 
     EventLoopGroup bossGroup = new NioEventLoopGroup(1);
     EventLoopGroup workGroup = new NioEventLoopGroup(); // 默认cpu核心数的2倍
 
     try {
 
-
-      String bindAddr=InetAddress.getLocalHost().getHostAddress();
+      String bindAddr = InetAddress.getLocalHost().getHostAddress();
       ServerBootstrap serverBootstrap = new ServerBootstrap();
       serverBootstrap
           .group(bossGroup, workGroup)
@@ -47,24 +48,25 @@ public class NettyServer {
 
                 @Override
                 protected void initChannel(SocketChannel socketChannel) throws Exception {
-                  socketChannel.pipeline()
-                          //将RPC请求进行解码（为了处理请求）
-                          .addLast(new RpcDecoder(RpcRequest.class))
-                          //将RPC请求进行编码（为了返回响应）
-                          .addLast(new RpcEncoder(RpcResponse.class))
-                          //处理RPC请求
-                          .addLast(new NettyServerHandler(SpringBeanUtil.getBeansByAnnotation(RpcService.class),bindAddr));
+                  socketChannel
+                      .pipeline()
+                      // 将RPC请求进行解码（为了处理请求）
+                      .addLast(new RpcDecoder(RpcRequest.class))
+                      // 将RPC请求进行编码（为了返回响应）
+                      .addLast(new RpcEncoder(RpcResponse.class))
+                      // 处理RPC请求
+                      .addLast(
+                          new NettyServerHandler(
+                              SpringBeanUtil.getBeansByAnnotation(RpcService.class), bindAddr));
                 }
               });
-        //TODO 注册中心待开发
-      ChannelFuture future = serverBootstrap.bind(bindAddr,8848).sync();
-
+      ChannelFuture future = serverBootstrap.bind(bindAddr, Constant.PORT).sync();
       // 创建一个监听器 异步处理不会阻塞
       future.addListener(
           (ChannelFutureListener)
               channelFuture -> {
                 if (channelFuture.isSuccess()) {
-                  System.out.println("监听端口是：8848");
+                  System.out.println("监听端口是："+Constant.PORT);
 
                 } else {
                   System.out.println("监听执行失败！");

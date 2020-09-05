@@ -13,6 +13,7 @@ import lombok.*;
 @Builder
 @Getter
 @Setter
+@Deprecated
 public class ReferenceBean {
 
     private Class<?> interfaceClass;

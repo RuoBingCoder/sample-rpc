@@ -1,5 +1,9 @@
 package com.sjl.rpc.context.zk.loadbalance;
 
+import com.google.common.cache.LoadingCache;
+import com.sjl.rpc.context.zk.handle.abs.BaseLoadBalance;
+import org.springframework.stereotype.Component;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -8,15 +12,17 @@ import java.util.List;
  * @date: 2020/9/2
  * @description: 负载均衡
  */
-public class LoadBalance {
+@Component
+public class PollLoadBalance extends BaseLoadBalance {
 
   private static int i = 0;
 
-  public static <T> String selectService(T datas) {
+  @Override
+  public <T> String selectService(T datas) {
     String result = "";
     if (datas instanceof List) {
       List services = (List) datas;
-      if (i >=services.size()) {
+      if (i >= services.size()) {
         i = 0;
       }
       result = (String) services.get(i++);
@@ -24,8 +30,7 @@ public class LoadBalance {
     } else if (datas instanceof String) {
       result = (String) datas;
     }
-
-    return result;
+    BaseLoadBalance loadBalance = new PollLoadBalance();
+    return loadBalance.loadBalance((List<String>) datas);
   }
-
 }
