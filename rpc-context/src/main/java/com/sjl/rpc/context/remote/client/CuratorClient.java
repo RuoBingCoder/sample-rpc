@@ -1,4 +1,4 @@
-package com.sjl.rpc.context.zk.client;
+package com.sjl.rpc.context.remote.client;
 
 import com.sjl.rpc.context.constants.Constant;
 import com.sjl.rpc.context.util.PropertiesUtil;
@@ -6,9 +6,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.curator.framework.CuratorFramework;
 import org.apache.curator.framework.CuratorFrameworkFactory;
 import org.apache.curator.retry.ExponentialBackoffRetry;
-import org.apache.zookeeper.CreateMode;
-
-import java.io.IOException;
 
 /**
  * @author: JianLei

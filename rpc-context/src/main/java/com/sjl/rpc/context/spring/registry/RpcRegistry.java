@@ -26,57 +26,71 @@ import java.util.stream.Collectors;
  * @author: JianLei
  * @date: 2020/8/30 2:27 下午
  * @description:
+ *     <p>负责对标有@RpcService注解的bean进行注册到Spring ioc中,有些地方可能还不够完善后续待完善
  */
+public class RpcRegistry
+    implements ImportBeanDefinitionRegistrar, ResourceLoaderAware, ApplicationContextAware {
 
-public class RpcRegistry implements ImportBeanDefinitionRegistrar, ResourceLoaderAware, ApplicationContextAware {
+  private ApplicationContext applicationContext;
+  private ResourceLoader resourceLoader;
 
-    private ApplicationContext applicationContext;
-    private ResourceLoader resourceLoader;
-    @Override
-    public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
-        this.applicationContext=applicationContext;
+  @Override
+  public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
+    this.applicationContext = applicationContext;
+  }
 
+  @Override
+  public void registerBeanDefinitions(
+      AnnotationMetadata annotationMetadata, BeanDefinitionRegistry registry) {
+    AnnotationAttributes mapperScanAttrs =
+        AnnotationAttributes.fromMap(
+            annotationMetadata.getAnnotationAttributes(RpcInterfacesScan.class.getName()));
+    if (mapperScanAttrs != null) {
+      registerBeanDefinitions(
+          mapperScanAttrs, registry, generateBaseBeanName(annotationMetadata, 0));
     }
+  }
 
-    @Override
-    public void registerBeanDefinitions(AnnotationMetadata annotationMetadata, BeanDefinitionRegistry registry) {
-        AnnotationAttributes mapperScanAttrs = AnnotationAttributes
-                .fromMap(annotationMetadata.getAnnotationAttributes(RpcInterfacesScan.class.getName()));
-        if (mapperScanAttrs != null) {
-            registerBeanDefinitions(mapperScanAttrs, registry, generateBaseBeanName(annotationMetadata, 0));
-        }
+  private static String generateBaseBeanName(AnnotationMetadata importingClassMetadata, int index) {
+    return importingClassMetadata.getClassName()
+        + "#"
+        + RpcRegistryScanner.class.getSimpleName()
+        + "#"
+        + index;
+  }
+
+  private void registerBeanDefinitions(
+      AnnotationAttributes attributes, BeanDefinitionRegistry registry, String beanName) {
+    RpcRegistryScanner scanner = new RpcRegistryScanner(registry);
+    Class<? extends Annotation> annotationClass = attributes.getClass("annotationClass");
+    if (!Annotation.class.equals(annotationClass)) {
+      scanner.setAnnotationClass(annotationClass);
     }
-    private static String generateBaseBeanName(AnnotationMetadata importingClassMetadata, int index) {
-        return importingClassMetadata.getClassName() + "#" + RpcRegistryScanner.class.getSimpleName() + "#" + index;
-    }
-    private void registerBeanDefinitions(AnnotationAttributes attributes,BeanDefinitionRegistry registry,String beanName){
-        RpcRegistryScanner scanner=new RpcRegistryScanner(registry);
-        Class<? extends Annotation> annotationClass = attributes.getClass("annotationClass");
-        if (!Annotation.class.equals(annotationClass)) {
-            scanner.setAnnotationClass(annotationClass);
-        }
-        List<String> basePackages=new ArrayList<>();
-        basePackages.addAll(
-                Arrays.stream(attributes.getStringArray("value")).filter(StringUtils::hasText).collect(Collectors.toList()));
+    List<String> basePackages = new ArrayList<>();
+    basePackages.addAll(
+        Arrays.stream(attributes.getStringArray("value"))
+            .filter(StringUtils::hasText)
+            .collect(Collectors.toList()));
 
-        basePackages.addAll(Arrays.stream(attributes.getStringArray("basePackages")).filter(StringUtils::hasText)
-                .collect(Collectors.toList()));
+    basePackages.addAll(
+        Arrays.stream(attributes.getStringArray("basePackages"))
+            .filter(StringUtils::hasText)
+            .collect(Collectors.toList()));
 
-        basePackages.addAll(Arrays.stream(attributes.getClassArray("basePackagesClasses")).map(ClassUtils::getPackageName)
-                .collect(Collectors.toList()));
-        basePackages.add(attributes.getString("type"));
-        scanner.setBasePackage(StringUtils.collectionToCommaDelimitedString(basePackages));
+    basePackages.addAll(
+        Arrays.stream(attributes.getClassArray("basePackagesClasses"))
+            .map(ClassUtils::getPackageName)
+            .collect(Collectors.toList()));
+    basePackages.add(attributes.getString("type"));
+    scanner.setBasePackage(StringUtils.collectionToCommaDelimitedString(basePackages));
 
-        //对标有SjlRpcService注解的类进行注册条件过滤
-        scanner.addIncludeFilter(new AnnotationTypeFilter(RpcService.class));
-        scanner.scan(StringUtils.toStringArray(basePackages));
+    // 对标有SjlRpcService注解的类进行注册条件过滤
+    scanner.addIncludeFilter(new AnnotationTypeFilter(RpcService.class));
+    scanner.scan(StringUtils.toStringArray(basePackages));
+  }
 
-
-
-    }
-
-    @Override
-    public void setResourceLoader(ResourceLoader resourceLoader) {
-        this.resourceLoader=resourceLoader;
-    }
+  @Override
+  public void setResourceLoader(ResourceLoader resourceLoader) {
+    this.resourceLoader = resourceLoader;
+  }
 }

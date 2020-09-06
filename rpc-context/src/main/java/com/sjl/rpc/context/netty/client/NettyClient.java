@@ -6,7 +6,7 @@ import com.sjl.rpc.context.codec.RpcEncoder;
 import com.sjl.rpc.context.mode.RpcRequest;
 import com.sjl.rpc.context.mode.RpcResponse;
 import com.sjl.rpc.context.util.SpringBeanUtil;
-import com.sjl.rpc.context.zk.handle.zk.RpcHandler;
+import com.sjl.rpc.context.remote.discover.RpcServiceDiscover;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelInitializer;
@@ -15,10 +15,7 @@ import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioSocketChannel;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-
-import java.util.Arrays;
 
 /**
  * @author: jianlei
@@ -28,6 +25,7 @@ import java.util.Arrays;
 @Component
 @Slf4j
 public class NettyClient {
+
   public static RpcResponse rpcResponse;
 
   public static RpcResponse start(RpcRequest request) {
@@ -57,8 +55,8 @@ public class NettyClient {
 
                 }
               });
-      final RpcHandler zkPublish = SpringBeanUtil.getBean(RpcHandler.class);
-      final String[] providerHost =  zkPublish.getChildNodeData(request).split(":");
+      RpcServiceDiscover rpcServiceDiscover= SpringBeanUtil.getBean(RpcServiceDiscover.class);
+      final String[] providerHost =  rpcServiceDiscover.selectService(request).split(":");
       log.info("获取远程服务地址是:{}", JSONObject.toJSONString(providerHost));
       ChannelFuture channelFuture = bootstrap.connect(providerHost[0], Integer.parseInt(providerHost[1])).sync();
       channelFuture.channel().writeAndFlush(request).sync();

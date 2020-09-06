@@ -64,11 +64,13 @@ public class RpcServiceBeanDefinitionRegistry implements BeanDefinitionRegistryP
 
     /**
      * 获取指定路径及子路径下的所有类
+     * 源码定位:ClassPathScanningCandidateComponentProvider类
      */
     private Set<Class<?>> scannerPackages(String basePackage) {
         Set<Class<?>> set = new LinkedHashSet<>();
+        //解析包名将com.sjl.test replace com/sjl/test
         String basePackageName = ClassUtils.convertClassNameToResourcePath(applicationContext.getEnvironment().resolveRequiredPlaceholders(basePackage));
-
+        //组装类.class路径扫描
         String packageSearchPath = ResourcePatternResolver.CLASSPATH_ALL_URL_PREFIX +
                 basePackageName + '/' + DEFAULT_RESOURCE_PATTERN;
         try {
@@ -96,6 +98,10 @@ public class RpcServiceBeanDefinitionRegistry implements BeanDefinitionRegistryP
     public void postProcessBeanFactory(ConfigurableListableBeanFactory beanFactory) throws BeansException {
     }
 
+    /**
+     * 源码定位:ClassPathScanningCandidateComponentProvider类中
+     * @param resourceLoader
+     */
     @Override
     public void setResourceLoader(ResourceLoader resourceLoader) {
         this.resourcePatternResolver = ResourcePatternUtils.getResourcePatternResolver(resourceLoader);

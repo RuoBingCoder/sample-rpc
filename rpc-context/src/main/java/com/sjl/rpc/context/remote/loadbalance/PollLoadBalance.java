@@ -1,10 +1,8 @@
-package com.sjl.rpc.context.zk.loadbalance;
+package com.sjl.rpc.context.remote.loadbalance;
 
-import com.google.common.cache.LoadingCache;
-import com.sjl.rpc.context.zk.handle.abs.BaseLoadBalance;
+import com.sjl.rpc.context.remote.handle.abs.BaseLoadBalance;
 import org.springframework.stereotype.Component;
 
-import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -30,7 +28,6 @@ public class PollLoadBalance extends BaseLoadBalance {
     } else if (datas instanceof String) {
       result = (String) datas;
     }
-    BaseLoadBalance loadBalance = new PollLoadBalance();
-    return loadBalance.loadBalance((List<String>) datas);
+    return result;
   }
 }
