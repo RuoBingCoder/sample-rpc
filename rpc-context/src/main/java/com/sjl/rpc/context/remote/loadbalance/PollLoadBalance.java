@@ -1,6 +1,6 @@
 package com.sjl.rpc.context.remote.loadbalance;
 
-import com.sjl.rpc.context.remote.handle.abs.BaseLoadBalance;
+import com.sjl.rpc.context.remote.handler.abs.BaseLoadBalance;
 import org.springframework.stereotype.Component;
 
 import java.util.List;

@@ -1,4 +1,4 @@
-package com.sjl.rpc.context.remote.handle.abs;
+package com.sjl.rpc.context.remote.handler.abs;
 
 @Deprecated
 public abstract class BaseServiceOperate {

@@ -3,6 +3,7 @@ package com.sjl.rpc.context.netty.client;
 import com.alibaba.fastjson.JSONObject;
 import com.sjl.rpc.context.codec.RpcDecoder;
 import com.sjl.rpc.context.codec.RpcEncoder;
+import com.sjl.rpc.context.exception.RpcException;
 import com.sjl.rpc.context.mode.RpcRequest;
 import com.sjl.rpc.context.mode.RpcResponse;
 import com.sjl.rpc.context.util.SpringBeanUtil;
@@ -10,12 +11,15 @@ import com.sjl.rpc.context.remote.discover.RpcServiceDiscover;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelInitializer;
+import io.netty.channel.EventLoop;
 import io.netty.channel.EventLoopGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioSocketChannel;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
+
+import java.util.concurrent.TimeUnit;
 
 /**
  * @author: jianlei
@@ -32,9 +36,8 @@ public class NettyClient {
 
     EventLoopGroup loopGroup = new NioEventLoopGroup();
     // 客户端使用的是Bootstrap
-
+    // 重试机制
     try {
-
       Bootstrap bootstrap = new Bootstrap();
 
       bootstrap
@@ -52,24 +55,39 @@ public class NettyClient {
                       .addLast(new RpcDecoder(RpcResponse.class))
                       /*使用NettyClientHandler发送RPC请求*/
                       .addLast(new NettyClientHandler());
-
                 }
               });
-      RpcServiceDiscover rpcServiceDiscover= SpringBeanUtil.getBean(RpcServiceDiscover.class);
-      final String[] providerHost =  rpcServiceDiscover.selectService(request).split(":");
+      RpcServiceDiscover rpcServiceDiscover = SpringBeanUtil.getBean(RpcServiceDiscover.class);
+      final String[] providerHost = rpcServiceDiscover.selectService(request).split(":");
       log.info("获取远程服务地址是:{}", JSONObject.toJSONString(providerHost));
-      ChannelFuture channelFuture = bootstrap.connect(providerHost[0], Integer.parseInt(providerHost[1])).sync();
+      ChannelFuture channelFuture =
+          bootstrap.connect(providerHost[0], Integer.parseInt(providerHost[1])).sync();
+      //创建监听器,连接失败重试
+      channelFuture.addListener(
+          future -> {
+            if (!channelFuture.isSuccess()) {
+              EventLoop loop = channelFuture.channel().eventLoop();
+              loop.schedule(
+                  () -> {
+                    try {
+                      bootstrap.connect(providerHost[0], Integer.parseInt(providerHost[1])).sync();
+                    } catch (InterruptedException e) {
+                      e.printStackTrace();
+                    }
+                  },
+                  1L,
+                  TimeUnit.SECONDS);
+            }
+          });
       channelFuture.channel().writeAndFlush(request).sync();
       channelFuture.channel().closeFuture().sync();
-
+      log.info("客户端连接远程服务成功!");
     } catch (Exception e) {
-      e.printStackTrace();
+      throw new RpcException("客户端远程连接异常");
 
     } finally {
       loopGroup.shutdownGracefully();
     }
     return rpcResponse == null ? new RpcResponse() : rpcResponse;
   }
-
-
 }

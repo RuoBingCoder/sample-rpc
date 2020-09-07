@@ -3,7 +3,7 @@ package com.sjl.rpc.context.remote.discover;
 import com.alibaba.fastjson.JSONObject;
 import com.sjl.rpc.context.exception.RpcException;
 import com.sjl.rpc.context.mode.RpcRequest;
-import com.sjl.rpc.context.remote.handle.abs.BaseRpcHandler;
+import com.sjl.rpc.context.remote.handler.abs.BaseRpcHandler;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 

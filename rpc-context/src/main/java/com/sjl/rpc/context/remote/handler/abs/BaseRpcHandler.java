@@ -1,4 +1,4 @@
-package com.sjl.rpc.context.remote.handle.abs;
+package com.sjl.rpc.context.remote.handler.abs;
 
 import cn.hutool.core.collection.CollectionUtil;
 import com.alibaba.fastjson.JSONObject;
@@ -27,10 +27,9 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 @Slf4j
 public abstract class BaseRpcHandler {
-  public static final Map<String, List<String>> cacheServiceMap = new ConcurrentHashMap<>();
+  protected static final Map<String, List<String>> cacheServiceMap = new ConcurrentHashMap<>();
   public static BaseLoadBalance loadBalance;
-  private static CuratorFramework curator = CuratorClient.instance();
-
+  private static final CuratorFramework curator = CuratorClient.instance();
 
   /**
    * 校验zk服务是否存在节点
@@ -101,7 +100,8 @@ public abstract class BaseRpcHandler {
    */
   protected String getChildNodePath(RpcRequest request) throws Exception {
     String providerHost;
-    String serviceNameSpace = handleCacheMapServiceName(request.getClassName(), request.getVersion());
+    String serviceNameSpace =
+        handleCacheMapServiceName(request.getClassName(), request.getVersion());
     List<String> services = curator.getChildren().forPath(serviceRegistryPath(serviceNameSpace));
     if (CollectionUtil.isEmpty(services)) {
       throw new RpcException("远程服务列表为空");
@@ -126,6 +126,7 @@ public abstract class BaseRpcHandler {
 
   /**
    * 注册监听节点事件
+   *
    * @param curator
    * @param serviceNameSpace
    */
@@ -143,40 +144,32 @@ public abstract class BaseRpcHandler {
         (c, event) -> {
           log.info(
               "zk监听节点变化当前path:{} data是:{}",
-              event.getData().getPath(),
-              new String(event.getData().getData()));
-          //更新缓存
-          List<String> services = curator.getChildren().forPath(serviceRegistryPath(serviceNameSpace));
-          cacheServiceMap.put(serviceNameSpace,services);
-
+              event==null||event.getData()==null?"--":event.getData().getPath(),
+              event==null||event.getData()==null?"==":new String(event.getData().getData()));
+          // 更新缓存
+          List<String> services =
+              curator.getChildren().forPath(serviceRegistryPath(serviceNameSpace));
+          cacheServiceMap.put(serviceNameSpace, services);
         };
     pathChildrenCache.getListenable().addListener(listener);
   }
-
 
   /**
    * @param serviceNameSpace
    * @return 负载均衡选取服务
    * @throws Exception
    */
-  private String doSelectService(List<String> serviceNameSpace)
-      throws Exception {
+  private String doSelectService(List<String> serviceNameSpace) throws Exception {
     return loadBalance.loadBalance(serviceNameSpace);
   }
   /**
-   * @Author jianlei.shi
-   * @Description 拼接服务名
-   * @Date 4:18 下午 2020/9/3
-   * @Param
+   * @Author jianlei.shi @Description 拼接服务名 @Date 4:18 下午 2020/9/3 @Param
    *
    * @return
    */
   protected String handleCacheMapServiceName(String name, String version) {
     return name + "&" + version;
   }
-
-
-
 
   public static void main(String[] args) throws Exception {
     Stat stat = curator.checkExists().forPath("/rocket/api.service.IGoodsService&1.0.1");

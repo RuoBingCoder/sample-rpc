@@ -12,11 +12,13 @@ import io.netty.channel.*;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.DependsOn;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
 import java.net.InetAddress;
+import java.util.concurrent.TimeUnit;
 
 /**
  * @author: jianlei
@@ -25,6 +27,7 @@ import java.net.InetAddress;
  */
 @Component
 @DependsOn("springBeanUtil")
+@Slf4j
 public class NettyServer {
 
 //  @PostConstruct
@@ -38,8 +41,8 @@ public class NettyServer {
       String bindAddr = InetAddress.getLocalHost().getHostAddress();
       ServerBootstrap serverBootstrap = new ServerBootstrap();
       serverBootstrap
-          .group(bossGroup, workGroup)
-          .channel(NioServerSocketChannel.class) // 设置两个线程组
+          .group(bossGroup, workGroup) // 设置两个线程组
+          .channel(NioServerSocketChannel.class)
           .option(ChannelOption.SO_BACKLOG, 128) // 设置队列连接数
           .childOption(ChannelOption.SO_KEEPALIVE, true) // 设置保持连接活动状态
           .childHandler(
@@ -66,10 +69,16 @@ public class NettyServer {
           (ChannelFutureListener)
               channelFuture -> {
                 if (channelFuture.isSuccess()) {
-                  System.out.println("监听端口是："+Constant.PORT);
-
+                  log.info("监听端口是：{}",Constant.PORT);
                 } else {
-                  System.out.println("监听执行失败！");
+                  log.error("监听执行失败开始重试");
+                  future.channel().eventLoop().schedule(() -> {
+                      try {
+                          serverBootstrap.bind(bindAddr, Constant.PORT).sync();
+                      } catch (InterruptedException e) {
+                          e.printStackTrace();
+                      }
+                  },1L, TimeUnit.SECONDS);
                 }
               });
       future.channel().closeFuture().sync();

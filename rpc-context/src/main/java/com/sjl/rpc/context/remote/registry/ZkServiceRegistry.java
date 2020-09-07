@@ -4,7 +4,7 @@ import com.sjl.rpc.context.annotation.RpcService;
 import com.sjl.rpc.context.exception.RpcException;
 import com.sjl.rpc.context.util.SpringBeanUtil;
 import com.sjl.rpc.context.remote.client.CuratorClient;
-import com.sjl.rpc.context.remote.handle.abs.BaseRpcHandler;
+import com.sjl.rpc.context.remote.handler.abs.BaseRpcHandler;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.InitializingBean;
