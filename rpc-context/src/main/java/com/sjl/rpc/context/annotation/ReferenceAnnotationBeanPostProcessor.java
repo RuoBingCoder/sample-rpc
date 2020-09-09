@@ -121,21 +121,16 @@ public class ReferenceAnnotationBeanPostProcessor
       throws BeansException {
     findInjectionMetadata(beanName, bean.getClass(), pvs);
     injectionMetadataCache.forEach(
-        (s, annotatedInjectionMetadata) -> {
-          annotatedInjectionMetadata
-              .getFieldElements()
-              .forEach(
-                  annotatedFieldElement -> {
-                    Constant.CACHE_SERVICE_ATTRIBUTES_MAP.put(annotatedFieldElement.field.getType().getName(),annotatedFieldElement.attributes);
-
-                  });
-        });
+        (s, aim) -> aim
+            .getFieldElements()
+            .forEach(
+                afe -> Constant.CACHE_SERVICE_ATTRIBUTES_MAP.put(afe.field.getType().getName(),afe.attributes)));
     return pvs;
   }
-  private InjectionMetadata findInjectionMetadata(String beanName, Class<?> clazz, PropertyValues pvs) {
-    // Fall back to class name as cache key, for backwards compatibility with custom callers.
+  private void findInjectionMetadata(String beanName, Class<?> clazz, PropertyValues pvs) {
+    // 退回类名称作为缓存键，以实现与自定义调用程序的向后兼容性。
     String cacheKey = (StringUtils.hasLength(beanName) ? beanName : clazz.getName());
-    // Quick check on the concurrent map first, with minimal locking.
+    // 首先以最小的锁定快速检查并发映射.
     ReferenceAnnotationBeanPostProcessor.AnnotatedInjectionMetadata metadata = this.injectionMetadataCache.get(cacheKey);
     if (InjectionMetadata.needsRefresh(metadata, clazz)) {
       synchronized (this.injectionMetadataCache) {
@@ -146,7 +141,6 @@ public class ReferenceAnnotationBeanPostProcessor
           }
           try {
             metadata = buildAnnotatedMetadata(clazz);
-//            log.info("---------cache key is:{}",cacheKey);
             this.injectionMetadataCache.put(cacheKey, metadata);
           } catch (NoClassDefFoundError err) {
             throw new IllegalStateException("Failed to introspect object class [" + clazz.getName() +
@@ -155,9 +149,8 @@ public class ReferenceAnnotationBeanPostProcessor
         }
       }
     }
-    return metadata;
   }
-  public class AnnotatedFieldElement extends InjectionMetadata.InjectedElement {
+  public static class AnnotatedFieldElement extends InjectionMetadata.InjectedElement {
 
     private final Field field;
 
@@ -169,6 +162,28 @@ public class ReferenceAnnotationBeanPostProcessor
       super(field, null);
       this.field = field;
       this.attributes = attributes;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+      if (this == o) {
+        return true;
+      }
+      if (o == null || getClass() != o.getClass()) {
+        return false;
+      }
+      if (!super.equals(o)) {
+        return false;
+      }
+      AnnotatedFieldElement that = (AnnotatedFieldElement) o;
+      return Objects.equals(field, that.field) &&
+              Objects.equals(attributes, that.attributes) &&
+              Objects.equals(bean, that.bean);
+    }
+
+    @Override
+    public int hashCode() {
+      return Objects.hash(super.hashCode(), field, attributes, bean);
     }
   }
 
@@ -210,11 +225,11 @@ public class ReferenceAnnotationBeanPostProcessor
 
   private ReferenceAnnotationBeanPostProcessor.AnnotatedInjectionMetadata buildAnnotatedMetadata(final Class<?> beanClass) {
     Collection<ReferenceAnnotationBeanPostProcessor.AnnotatedFieldElement> fieldElements = findFieldAnnotationMetadata(beanClass);
-    return new ReferenceAnnotationBeanPostProcessor.AnnotatedInjectionMetadata(beanClass, fieldElements);
+    return new AnnotatedInjectionMetadata(beanClass, fieldElements);
 
   }
 
-  private class AnnotatedInjectionMetadata extends InjectionMetadata {
+  private static class AnnotatedInjectionMetadata extends InjectionMetadata {
 
     private final Collection<ReferenceAnnotationBeanPostProcessor.AnnotatedFieldElement> fieldElements;
 
@@ -232,6 +247,7 @@ public class ReferenceAnnotationBeanPostProcessor
 
   }
 
+  @SafeVarargs
   private static <T> Collection<T> combine(Collection<? extends T>... elements) {
     List<T> allElements = new ArrayList<>();
     for (Collection<? extends T> e : elements) {
