@@ -22,7 +22,12 @@ public class Constant {
   public static String ROOT_PATH="/rocket/";
   public static final String PROVIDER = "provider";
   public static final String CONSUMER = "consumer";
-  public static final Integer PORT=8818;
+  public static final Integer PORT=8817;
+  public static final String PING="ping";
+  public static final String PONG="pong";
+  public static final String RPC="rpc";
+  public static final String AUTH="auth";
+
 
 
 }

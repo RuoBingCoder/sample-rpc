@@ -6,6 +6,7 @@ import com.sjl.rpc.context.codec.RpcEncoder;
 import com.sjl.rpc.context.exception.RpcException;
 import com.sjl.rpc.context.mode.RpcRequest;
 import com.sjl.rpc.context.mode.RpcResponse;
+import com.sjl.rpc.context.netty.abs.BaseClientTransporter;
 import com.sjl.rpc.context.util.SpringBeanUtil;
 import com.sjl.rpc.context.remote.discover.RpcServiceDiscover;
 import io.netty.bootstrap.Bootstrap;
@@ -28,66 +29,14 @@ import java.util.concurrent.TimeUnit;
  */
 @Component
 @Slf4j
-public class NettyClient {
+public class NettyClient extends BaseClientTransporter {
 
-  public static RpcResponse rpcResponse;
 
   public static RpcResponse start(RpcRequest request) {
+    return new NettyClient().connect(request);
+  }
 
-    EventLoopGroup loopGroup = new NioEventLoopGroup();
-    // 客户端使用的是Bootstrap
-    // 重试机制
-    try {
-      Bootstrap bootstrap = new Bootstrap();
-
-      bootstrap
-          .group(loopGroup)
-          .channel(NioSocketChannel.class)
-          .handler(
-              new ChannelInitializer<SocketChannel>() {
-                @Override
-                protected void initChannel(SocketChannel socketChannel) throws Exception {
-                  socketChannel
-                      .pipeline()
-                      /*将RPC请求进行编码（发送请求）*/
-                      .addLast(new RpcEncoder(RpcRequest.class))
-                      /*将RPC响应进行解码（返回响应）*/
-                      .addLast(new RpcDecoder(RpcResponse.class))
-                      /*使用NettyClientHandler发送RPC请求*/
-                      .addLast(new NettyClientHandler());
-                }
-              });
-      RpcServiceDiscover rpcServiceDiscover = SpringBeanUtil.getBean(RpcServiceDiscover.class);
-      final String[] providerHost = rpcServiceDiscover.selectService(request).split(":");
-      log.info("获取远程服务地址是:{}", JSONObject.toJSONString(providerHost));
-      ChannelFuture channelFuture =
-          bootstrap.connect(providerHost[0], Integer.parseInt(providerHost[1])).sync();
-      //创建监听器,连接失败重试
-      channelFuture.addListener(
-          future -> {
-            if (!channelFuture.isSuccess()) {
-              EventLoop loop = channelFuture.channel().eventLoop();
-              loop.schedule(
-                  () -> {
-                    try {
-                      bootstrap.connect(providerHost[0], Integer.parseInt(providerHost[1])).sync();
-                    } catch (InterruptedException e) {
-                      e.printStackTrace();
-                    }
-                  },
-                  1L,
-                  TimeUnit.SECONDS);
-            }
-          });
-      channelFuture.channel().writeAndFlush(request).sync();
-      channelFuture.channel().closeFuture().sync();
-      log.info("客户端连接远程服务成功!");
-    } catch (Exception e) {
-      throw new RpcException("客户端远程连接异常");
-
-    } finally {
-      loopGroup.shutdownGracefully();
-    }
-    return rpcResponse == null ? new RpcResponse() : rpcResponse;
+  @Override
+  public void bind() {
   }
 }

@@ -48,7 +48,7 @@ public class ReferenceAnnotationBeanPostProcessor
         BeanClassLoaderAware,
         EnvironmentAware,
         DisposableBean {
-  private Class<? extends Annotation>[] annotationTypes = null;
+  private java.lang.Class[] annotationTypes;
   private Environment environment;
   private ClassLoader classLoader;
   private static final int CACHE_SIZE = Integer.getInteger("", 32);
@@ -71,7 +71,7 @@ public class ReferenceAnnotationBeanPostProcessor
   public ReferenceAnnotationBeanPostProcessor() {
 
     this.annotationTypes =
-        new Class[] {Reference.class, Reference.class};
+        new Class[] {Reference.class, com.sjl.rpc.context.annotation.Reference.class};
   }
 
   public Class<? extends Annotation>[] getAnnotationTypes() {
@@ -89,7 +89,7 @@ public class ReferenceAnnotationBeanPostProcessor
 
   @Override
   public void setBeanFactory(BeanFactory beanFactory) throws BeansException {
-    this.listableBeanFactory= (ConfigurableListableBeanFactory) beanFactory;
+    org.springframework.beans.factory.config.ConfigurableListableBeanFactory listableBeanFactory = (ConfigurableListableBeanFactory) beanFactory;
   }
 
   @Override
