@@ -7,7 +7,7 @@ import java.lang.annotation.*;
 @Target({ElementType.TYPE})
 @Retention(RetentionPolicy.RUNTIME)
 @Documented
-public @interface RpcService {
+public @interface RocketService {
     Class<?> value() ;
 
     String version() default "";

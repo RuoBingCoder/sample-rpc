@@ -3,8 +3,8 @@ package com.sjl.rpc.context.remote.handler.abs;
 import cn.hutool.core.collection.CollectionUtil;
 import com.alibaba.fastjson.JSONObject;
 import com.sjl.rpc.context.constants.Constant;
-import com.sjl.rpc.context.exception.RpcException;
-import com.sjl.rpc.context.mode.RpcRequest;
+import com.sjl.rpc.context.exception.RocketException;
+import com.sjl.rpc.context.bean.RocketRequest;
 import com.sjl.rpc.context.util.SpringBeanUtil;
 import com.sjl.rpc.context.remote.client.CuratorClient;
 import lombok.extern.slf4j.Slf4j;
@@ -41,11 +41,11 @@ public abstract class BaseRpcHandler {
    */
   protected boolean doCheckServiceNodeIsExists(String beanName, String version) throws Exception {
     if (!"".equals(version)) {
-      return !cacheServiceMap.containsKey(handleCacheMapServiceName(beanName, version))
+      return cacheServiceMap.containsKey(handleCacheMapServiceName(beanName, version))
           && curator
                   .checkExists()
                   .forPath(handleCurrentServicePath(handleCacheMapServiceName(beanName, version)))
-              == null;
+              != null;
     }
     return false;
   }
@@ -67,7 +67,7 @@ public abstract class BaseRpcHandler {
           .forPath(servicePath);
     } catch (Exception e) {
       log.error("====>create zk node error!error message is:", e);
-      throw new RpcException("创建节点异常");
+      throw new RocketException("创建节点异常");
     }
   }
 
@@ -98,13 +98,13 @@ public abstract class BaseRpcHandler {
    * @return 负载均衡获取服务
    * @throws Exception
    */
-  protected String getChildNodePath(RpcRequest request) throws Exception {
+  protected String getChildNodePath(RocketRequest request) throws Exception {
     String providerHost;
     String serviceNameSpace =
         handleCacheMapServiceName(request.getClassName(), request.getVersion());
     List<String> services = curator.getChildren().forPath(serviceRegistryPath(serviceNameSpace));
     if (CollectionUtil.isEmpty(services)) {
-      throw new RpcException("远程服务列表为空");
+      throw new RocketException("远程服务列表为空");
     }
     // 先进行负载
     // 1.首先判断服务名是否存在, 2.在判断IP是否存在
@@ -138,7 +138,7 @@ public abstract class BaseRpcHandler {
       pathChildrenCache.start(PathChildrenCache.StartMode.POST_INITIALIZED_EVENT);
     } catch (Exception e) {
       log.error("zk监听节点出现异常", e);
-      throw new RpcException("zk监听节点出现异常");
+      throw new RocketException("zk监听节点出现异常");
     }
     PathChildrenCacheListener listener =
         (c, event) -> {

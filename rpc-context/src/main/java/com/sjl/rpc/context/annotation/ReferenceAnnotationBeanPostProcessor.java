@@ -20,7 +20,6 @@ import org.springframework.context.EnvironmentAware;
 import org.springframework.core.PriorityOrdered;
 import org.springframework.core.annotation.AnnotationAttributes;
 import org.springframework.core.env.Environment;
-import org.springframework.stereotype.Component;
 import org.springframework.util.ReflectionUtils;
 import org.springframework.util.StringUtils;
 
@@ -37,9 +36,10 @@ import java.util.concurrent.ConcurrentMap;
  * @date: 2020/8/31 5:03 下午
  * @description: 主要是获取自定义注解信息,仿照@Autowired原理
  */
-@Component
+//@Component
 @Slf4j
 @AllArgsConstructor
+@Deprecated
 public class ReferenceAnnotationBeanPostProcessor
     extends InstantiationAwareBeanPostProcessorAdapter
     implements MergedBeanDefinitionPostProcessor,
@@ -71,7 +71,7 @@ public class ReferenceAnnotationBeanPostProcessor
   public ReferenceAnnotationBeanPostProcessor() {
 
     this.annotationTypes =
-        new Class[] {Reference.class, com.sjl.rpc.context.annotation.Reference.class};
+        new Class[] {RocketReference.class, RocketReference.class};
   }
 
   public Class<? extends Annotation>[] getAnnotationTypes() {

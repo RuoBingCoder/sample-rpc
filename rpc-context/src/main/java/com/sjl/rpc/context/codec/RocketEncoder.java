@@ -9,11 +9,11 @@ import io.netty.handler.codec.MessageToByteEncoder;
 /**
  * RPC请求编码，只需扩展 Netty 的MessageToByteEncoder抽象类，并且实现其encode方法即可
  */
-public class RpcEncoder extends MessageToByteEncoder {
+public class RocketEncoder extends MessageToByteEncoder {
 
     private Class<?> genericClass;
 
-    public RpcEncoder(Class<?> genericClass) {
+    public RocketEncoder(Class<?> genericClass) {
         this.genericClass = genericClass;
     }
 

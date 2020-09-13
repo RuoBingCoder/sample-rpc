@@ -1,11 +1,11 @@
 package com.sjl.rpc.context.netty.abs;
 
-import com.sjl.rpc.context.annotation.RpcService;
-import com.sjl.rpc.context.codec.RpcDecoder;
-import com.sjl.rpc.context.codec.RpcEncoder;
+import com.sjl.rpc.context.annotation.RocketService;
+import com.sjl.rpc.context.codec.RocketDecoder;
+import com.sjl.rpc.context.codec.RocketEncoder;
 import com.sjl.rpc.context.constants.Constant;
-import com.sjl.rpc.context.mode.RpcRequest;
-import com.sjl.rpc.context.mode.RpcResponse;
+import com.sjl.rpc.context.bean.RocketRequest;
+import com.sjl.rpc.context.bean.RocketResponse;
 import com.sjl.rpc.context.netty.server.NettyServerHandler;
 import com.sjl.rpc.context.netty.service.Transporter;
 import com.sjl.rpc.context.util.SpringBeanUtil;
@@ -47,13 +47,13 @@ public abstract class BaseServerTransporter implements Transporter {
                                     socketChannel
                                             .pipeline()
                                             // 将RPC请求进行解码（为了处理请求）
-                                            .addLast(new RpcDecoder(RpcRequest.class))
+                                            .addLast(new RocketDecoder(RocketRequest.class))
                                             // 将RPC请求进行编码（为了返回响应）
-                                            .addLast(new RpcEncoder(RpcResponse.class))
+                                            .addLast(new RocketEncoder(RocketResponse.class))
                                             // 处理RPC请求
                                             .addLast(
                                                     new NettyServerHandler(
-                                                            SpringBeanUtil.getBeansByAnnotation(RpcService.class), bindAddr));
+                                                            SpringBeanUtil.getBeansByAnnotation(RocketService.class), bindAddr));
                                 }
                             });
             ChannelFuture future = serverBootstrap.bind(bindAddr, Constant.PORT).sync();

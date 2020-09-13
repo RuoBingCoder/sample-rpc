@@ -17,7 +17,7 @@ import java.util.stream.Collectors;
  * @description: 对标有sjlRpcService注解的类进行注册到ioc中
  */
 @Slf4j
-public class RpcRegistryScanner extends ClassPathBeanDefinitionScanner {
+public class RocketScanner extends ClassPathBeanDefinitionScanner {
 
   private String basePackage;
   private String beanName;
@@ -56,7 +56,7 @@ public class RpcRegistryScanner extends ClassPathBeanDefinitionScanner {
     this.annotationClass = annotationClass;
   }
 
-  public RpcRegistryScanner(BeanDefinitionRegistry registry) {
+  public RocketScanner(BeanDefinitionRegistry registry) {
     super(registry);
   }
 /**

@@ -1,10 +1,7 @@
 package com.sjl.rpc.context.netty.service;
 
-import com.sjl.rpc.context.mode.RpcRequest;
-import com.sjl.rpc.context.mode.RpcResponse;
-import io.netty.channel.ChannelFuture;
-
-import java.lang.reflect.Method;
+import com.sjl.rpc.context.bean.RocketRequest;
+import com.sjl.rpc.context.bean.RocketResponse;
 
 /**
  * @author: JianLei
@@ -15,8 +12,12 @@ import java.lang.reflect.Method;
 public interface Transporter {
 
 
-    void bind();
+   default void bind(){
+
+   }
 
 
-    RpcResponse connect(RpcRequest request);
+   default RocketResponse connect(RocketRequest request){
+       return null;
+   }
 }

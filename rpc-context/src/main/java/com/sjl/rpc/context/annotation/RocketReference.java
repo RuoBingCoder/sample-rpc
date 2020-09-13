@@ -5,9 +5,11 @@ import java.lang.annotation.*;
 @Target({ElementType.FIELD})
 @Retention(RetentionPolicy.RUNTIME)
 @Documented
-public @interface Reference {
+public @interface RocketReference {
     Class<?> value() ;
     String name() default "";
 
     String version() default "";
+
+    String group() default "";
 }

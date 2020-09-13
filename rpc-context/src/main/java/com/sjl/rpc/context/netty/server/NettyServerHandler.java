@@ -1,8 +1,8 @@
 package com.sjl.rpc.context.netty.server;
 
 import com.google.gson.Gson;
-import com.sjl.rpc.context.mode.RpcRequest;
-import com.sjl.rpc.context.mode.RpcResponse;
+import com.sjl.rpc.context.bean.RocketRequest;
+import com.sjl.rpc.context.bean.RocketResponse;
 import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
@@ -19,7 +19,7 @@ import java.util.concurrent.ConcurrentHashMap;
  * @description: NettyServerHandler
  */
 @Slf4j
-public class NettyServerHandler extends SimpleChannelInboundHandler<RpcRequest> {
+public class NettyServerHandler extends SimpleChannelInboundHandler<RocketRequest> {
   private final ConcurrentHashMap<String, Object> handlerMap;
 
 
@@ -35,10 +35,10 @@ public class NettyServerHandler extends SimpleChannelInboundHandler<RpcRequest> 
   }
 
   @Override
-  protected void channelRead0(ChannelHandlerContext ctx, RpcRequest request) throws Exception {
+  protected void channelRead0(ChannelHandlerContext ctx, RocketRequest request) throws Exception {
 
     /*构造RPC响应对象*/
-    RpcResponse response = new RpcResponse();
+    RocketResponse response = new RocketResponse();
     /*设置响应ID，也就是上面的请求ID*/
     response.setReponseId(request.getRequestId());
 
@@ -62,7 +62,7 @@ public class NettyServerHandler extends SimpleChannelInboundHandler<RpcRequest> 
    * @return
    * @throws InvocationTargetException
    */
-  private Object handle(RpcRequest request)
+  private Object handle(RocketRequest request)
       throws InvocationTargetException, ClassNotFoundException {
     log.info("handle 入参为:{}", new Gson().toJson(request.getClassName()));
     String className = request.getClassName();

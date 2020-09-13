@@ -1,4 +1,4 @@
-package com.sjl.rpc.context.mode;
+package com.sjl.rpc.context.bean;
 
 import lombok.Data;
 
@@ -10,7 +10,7 @@ import java.io.Serializable;
  * @description:
  */
 @Data
-public class RpcRequest implements Serializable {
+public class RocketRequest implements Serializable {
 
   private static final long serialVersionUID = -2625585669090924236L;
 

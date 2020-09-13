@@ -1,4 +1,4 @@
-package com.sjl.rpc.context.mode;
+package com.sjl.rpc.context.bean;
 
 import lombok.Data;
 
@@ -10,7 +10,7 @@ import java.io.Serializable;
  * @description:
  */
 @Data
-public class RpcResponse implements Serializable {
+public class RocketResponse implements Serializable {
     private static final long serialVersionUID = 3374714188555167852L;
     /*响应ID*/
     private String reponseId;

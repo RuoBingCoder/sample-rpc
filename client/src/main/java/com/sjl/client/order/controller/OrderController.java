@@ -4,7 +4,7 @@ import api.domain.Goods;
 import api.service.IGoodsService;
 import api.service.IProductService;
 import com.google.gson.Gson;
-import com.sjl.rpc.context.annotation.Reference;
+import com.sjl.rpc.context.annotation.RocketReference;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -21,10 +21,10 @@ import java.util.List;
 @RequestMapping("/order")
 @Slf4j
 public class OrderController {
-  @Reference(value = IGoodsService.class, version = "1.0.1")
+  @RocketReference(value = IGoodsService.class, version = "1.0.1")
   private IGoodsService iGoodsService;
 
-  @Reference(value = IProductService.class, version = "1.0.1")
+  @RocketReference(value = IProductService.class, version = "1.0.1")
   private IProductService iProductService;
 
   //  @Autowired

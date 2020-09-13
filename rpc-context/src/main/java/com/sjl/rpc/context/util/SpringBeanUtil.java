@@ -1,7 +1,8 @@
 package com.sjl.rpc.context.util;
 
+import cn.hutool.core.collection.CollectionUtil;
 import com.google.gson.Gson;
-import com.sjl.rpc.context.annotation.RpcService;
+import com.sjl.rpc.context.annotation.RocketService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
@@ -33,18 +34,15 @@ public class SpringBeanUtil implements ApplicationContextAware {
     ConcurrentHashMap<String, Object> handlerMap = new ConcurrentHashMap<>();
     try {
       if (clazz != null) {
-        Map beans = SpringBeanUtil.applicationContext.getBeansWithAnnotation(clazz);
+        Map<String, Object> beans = SpringBeanUtil.applicationContext.getBeansWithAnnotation(clazz);
         log.info("========beans 是:{}",new Gson().toJson(beans));
-
-        if (beans.size() > 0 && beans != null) {
+        if (CollectionUtil.isNotEmpty(beans)) {
           for (Object bean : beans.values()) {
             String interFaceName =
-                bean.getClass().getAnnotation(RpcService.class).value().getName();
+                bean.getClass().getAnnotation(RocketService.class).value().getName();
 
             handlerMap.put(interFaceName, bean);
           }
-          //注册到zk上
-//          ZkConnect.instance().create().withMode("/rocket/service",new InterfaceAddress())
           return handlerMap;
         }
       }
@@ -58,8 +56,13 @@ public class SpringBeanUtil implements ApplicationContextAware {
     return (T) SpringBeanUtil.applicationContext.getBean(type);
   }
 
-  public static void main(String[] args) throws ClassNotFoundException {
-    Class<?> aClass = Class.forName("api.service.IGoodsService",true,Thread.currentThread().getContextClassLoader());
-    System.out.println(aClass.getName());
-  }
+  public static void main(String[] args) throws ClassNotFoundException, InterruptedException {
+      if (true) {
+        byte[] placeHolder = new byte[64 * 1024 * 1024];
+        System.out.println(placeHolder.length / 1024);
+      }
+      int replacer = 1;
+      System.gc();
+      Thread.sleep(100000);
+    }
 }

@@ -13,7 +13,7 @@ import org.springframework.stereotype.Component;
  */
 @Component
 @Slf4j
-public class NettyStart implements ApplicationListener<ContextRefreshedEvent> {
+public class NettyServerStart implements ApplicationListener<ContextRefreshedEvent> {
   @Override
   public void onApplicationEvent(ContextRefreshedEvent contextRefreshedEvent) {
     if (contextRefreshedEvent.getApplicationContext().getParent() == null) {

@@ -1,8 +1,8 @@
 package com.sjl.rpc.context.spring.registry;
 
-import com.sjl.rpc.context.annotation.RpcInterfacesScan;
-import com.sjl.rpc.context.annotation.RpcService;
-import com.sjl.rpc.context.spring.scanner.RpcRegistryScanner;
+import com.sjl.rpc.context.annotation.EnableRocketScan;
+import com.sjl.rpc.context.annotation.RocketService;
+import com.sjl.rpc.context.spring.scanner.RocketScanner;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.support.BeanDefinitionRegistry;
 import org.springframework.context.ApplicationContext;
@@ -28,7 +28,7 @@ import java.util.stream.Collectors;
  * @description:
  *     <p>负责对标有@RpcService注解的bean进行注册到Spring ioc中,有些地方可能还不够完善后续待完善
  */
-public class RpcRegistry
+public class RocketRegistry
     implements ImportBeanDefinitionRegistrar, ResourceLoaderAware, ApplicationContextAware {
 
   private ApplicationContext applicationContext;
@@ -44,7 +44,7 @@ public class RpcRegistry
       AnnotationMetadata annotationMetadata, BeanDefinitionRegistry registry) {
     AnnotationAttributes mapperScanAttrs =
         AnnotationAttributes.fromMap(
-            annotationMetadata.getAnnotationAttributes(RpcInterfacesScan.class.getName()));
+            annotationMetadata.getAnnotationAttributes(EnableRocketScan.class.getName()));
     if (mapperScanAttrs != null) {
       registerBeanDefinitions(
           mapperScanAttrs, registry, generateBaseBeanName(annotationMetadata, 0));
@@ -54,14 +54,14 @@ public class RpcRegistry
   private static String generateBaseBeanName(AnnotationMetadata importingClassMetadata, int index) {
     return importingClassMetadata.getClassName()
         + "#"
-        + RpcRegistryScanner.class.getSimpleName()
+        + RocketScanner.class.getSimpleName()
         + "#"
         + index;
   }
 
   private void registerBeanDefinitions(
       AnnotationAttributes attributes, BeanDefinitionRegistry registry, String beanName) {
-    RpcRegistryScanner scanner = new RpcRegistryScanner(registry);
+    RocketScanner scanner = new RocketScanner(registry);
     Class<? extends Annotation> annotationClass = attributes.getClass("annotationClass");
     if (!Annotation.class.equals(annotationClass)) {
       scanner.setAnnotationClass(annotationClass);
@@ -85,7 +85,7 @@ public class RpcRegistry
     scanner.setBasePackage(StringUtils.collectionToCommaDelimitedString(basePackages));
 
     // 对标有SjlRpcService注解的类进行注册条件过滤
-    scanner.addIncludeFilter(new AnnotationTypeFilter(RpcService.class));
+    scanner.addIncludeFilter(new AnnotationTypeFilter(RocketService.class));
     scanner.scan(StringUtils.toStringArray(basePackages));
   }
 

@@ -2,11 +2,9 @@ package com.sjl.rpc.context.factory;
 
 
 import com.alibaba.fastjson.JSONObject;
-import com.sjl.rpc.context.constants.Constant;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
-import org.springframework.beans.factory.support.BeanDefinitionBuilder;
 import org.springframework.beans.factory.support.BeanDefinitionRegistry;
 import org.springframework.beans.factory.support.BeanDefinitionRegistryPostProcessor;
 import org.springframework.beans.factory.support.GenericBeanDefinition;
@@ -20,7 +18,6 @@ import org.springframework.core.io.support.ResourcePatternUtils;
 import org.springframework.core.type.classreading.CachingMetadataReaderFactory;
 import org.springframework.core.type.classreading.MetadataReader;
 import org.springframework.core.type.classreading.MetadataReaderFactory;
-import org.springframework.stereotype.Component;
 import org.springframework.util.ClassUtils;
 
 import java.io.IOException;
@@ -30,11 +27,11 @@ import java.util.Set;
 /**
  * 为接口注入实现类
  */
-@Component
 @Slf4j
+@Deprecated
 public class RpcServiceBeanDefinitionRegistry implements BeanDefinitionRegistryPostProcessor, ResourceLoaderAware, ApplicationContextAware {
     private static final String DEFAULT_RESOURCE_PATTERN = "**/*.class";
-    private static ApplicationContext applicationContext;
+    private ApplicationContext applicationContext;
     private MetadataReaderFactory metadataReaderFactory;
     private ResourcePatternResolver resourcePatternResolver;
     public static String scannerPackages = "";
@@ -54,10 +51,9 @@ public class RpcServiceBeanDefinitionRegistry implements BeanDefinitionRegistryP
     }
 
     private void registerBean(BeanDefinitionRegistry registry, Class clazz) {
-        BeanDefinitionBuilder builder = BeanDefinitionBuilder.genericBeanDefinition(clazz);
-        GenericBeanDefinition definition = (GenericBeanDefinition) builder.getRawBeanDefinition();
+        GenericBeanDefinition definition = new GenericBeanDefinition();
         definition.getConstructorArgumentValues().addGenericArgumentValue(clazz);
-        definition.setBeanClass(RpcServiceFactory.class);
+        definition.setBeanClass(RocketServiceFactory.class);
         definition.setAutowireMode(GenericBeanDefinition.AUTOWIRE_BY_TYPE);
         registry.registerBeanDefinition(clazz.getSimpleName(), definition);
     }

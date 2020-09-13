@@ -11,10 +11,10 @@ import java.util.List;
  * RPC请求解码，只需扩展Netty的ByteToMessageDecoder抽象类，并且实现其decode方法即可
  *
  */
-public class RpcDecoder extends ByteToMessageDecoder {
+public class RocketDecoder extends ByteToMessageDecoder {
     private Class<?> genericClass;
 
-    public RpcDecoder(Class<?> genericClass) {
+    public RocketDecoder(Class<?> genericClass) {
         this.genericClass = genericClass;
     }
 

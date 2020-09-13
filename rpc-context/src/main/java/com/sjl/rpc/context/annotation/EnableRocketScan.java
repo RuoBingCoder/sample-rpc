@@ -1,7 +1,7 @@
 package com.sjl.rpc.context.annotation;
 
 import com.sjl.rpc.context.constants.Constant;
-import com.sjl.rpc.context.spring.registry.RpcRegistry;
+import com.sjl.rpc.context.spring.registry.RocketRegistry;
 import org.springframework.context.annotation.Import;
 
 import java.lang.annotation.*;
@@ -14,8 +14,8 @@ import java.lang.annotation.*;
 @Target({ElementType.TYPE})
 @Retention(RetentionPolicy.RUNTIME)
 @Documented
-@Import(RpcRegistry.class)
-public  @interface RpcInterfacesScan {
+@Import(RocketRegistry.class)
+public  @interface EnableRocketScan {
 
     Class<?>[] basePackagesClasses() default {} ;
 

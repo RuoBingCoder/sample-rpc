@@ -6,8 +6,8 @@ package com.sjl.rpc.context.exception;
  * @description:
  */
 
-public class RpcException extends RuntimeException {
-    public RpcException(String message) {
+public class RocketException extends RuntimeException {
+    public RocketException(String message) {
         super(message);
     }
 }

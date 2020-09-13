@@ -1,7 +1,7 @@
 package com.sjl.rpc.context.remote.registry;
 
-import com.sjl.rpc.context.annotation.RpcService;
-import com.sjl.rpc.context.exception.RpcException;
+import com.sjl.rpc.context.annotation.RocketService;
+import com.sjl.rpc.context.exception.RocketException;
 import com.sjl.rpc.context.util.SpringBeanUtil;
 import com.sjl.rpc.context.remote.client.CuratorClient;
 import com.sjl.rpc.context.remote.handler.abs.BaseRpcHandler;
@@ -35,19 +35,19 @@ public class ZkServiceRegistry extends BaseRpcHandler
       return;
     }
     final ConcurrentHashMap<String, Object> beans =
-        SpringBeanUtil.getBeansByAnnotation(RpcService.class);
+        SpringBeanUtil.getBeansByAnnotation(RocketService.class);
     beans.forEach(
         (beanName, bean) -> {
           try {
-            final RpcService sjlRpcService = bean.getClass().getAnnotation(RpcService.class);
+            final RocketService sjlRpcService = bean.getClass().getAnnotation(RocketService.class);
             final String v = sjlRpcService.version();
             boolean flag = doCheckServiceNodeIsExists(beanName, v);
-            if (flag) {
+            if (!flag) {
               createServicePath(CuratorClient.instance(), handleCacheMapServiceName(beanName, v));
             }
           } catch (Exception e) {
             log.error("====>发布服务出现异常", e);
-            throw new RpcException("发布服务出现异常");
+            throw new RocketException("发布服务出现异常");
           }
         });
   }

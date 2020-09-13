@@ -1,6 +1,6 @@
 package com.sjl.rpc.context.netty.client;
 
-import com.sjl.rpc.context.mode.RpcResponse;
+import com.sjl.rpc.context.bean.RocketResponse;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
 import lombok.extern.slf4j.Slf4j;
@@ -11,14 +11,14 @@ import lombok.extern.slf4j.Slf4j;
  * @description: NettyClientHandler
  */
 @Slf4j
-public class NettyClientHandler extends SimpleChannelInboundHandler<RpcResponse> {
+public class NettyClientHandler extends SimpleChannelInboundHandler<RocketResponse> {
 
 
-  private RpcResponse response;
+  private RocketResponse response;
 
 
   @Override
-  protected void channelRead0(ChannelHandlerContext channelHandlerContext, RpcResponse rpcResponse) throws Exception {
+  protected void channelRead0(ChannelHandlerContext channelHandlerContext, RocketResponse rpcResponse) throws Exception {
     this.response = rpcResponse;
     //简单赋值
     NettyClient.rpcResponse = rpcResponse;
