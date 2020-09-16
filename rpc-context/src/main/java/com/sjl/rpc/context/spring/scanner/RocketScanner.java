@@ -71,19 +71,6 @@ public class RocketScanner extends ClassPathBeanDefinitionScanner {
     if (log.isInfoEnabled()) {
       log.info("=======>>>basePackages :{}<<========", JSONObject.toJSONString(basePackages));
     }
-
-    List<String> strings = Arrays.asList(basePackages);
-    /**
-     * <p>此处主要用来表示是否是消费者,如果是消费者则对消费者消费的接口进行条件代理注册</p>
-     *
-     * <p>
-     */
-    if (strings.contains("consumer")) {
-      log.info("consumer package is :{}", JSONObject.toJSONString(basePackages));
-     RpcServiceBeanDefinitionRegistry.scannerPackages =
-          strings.stream().filter(s -> s.startsWith("api")).collect(Collectors.joining());
-      return 1;
-    }
     return super.scan(basePackages);
   }
 }
