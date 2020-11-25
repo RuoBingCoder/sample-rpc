@@ -6,7 +6,6 @@ import org.springframework.context.annotation.ComponentScan;
 
 @SpringBootApplication
 @ComponentScan(basePackages = {"com.sjl.client","com.sjl.rpc.context"})
-//@RpcInterfacesScan(basePackages = "api.service")
 public class ClientApplication {
 
   public static void main(String[] args) {

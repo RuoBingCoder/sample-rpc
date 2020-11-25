@@ -1,5 +1,5 @@
 server:
-  port: 8173
+  port: 8172
 client:
   ip: 127.0.0.1
 

@@ -14,15 +14,11 @@ import lombok.extern.slf4j.Slf4j;
 public class NettyClientHandler extends SimpleChannelInboundHandler<RocketResponse> {
 
 
-  private RocketResponse response;
-
-
   @Override
   protected void channelRead0(ChannelHandlerContext channelHandlerContext, RocketResponse rpcResponse) throws Exception {
-    this.response = rpcResponse;
     //简单赋值
     NettyClient.rpcResponse = rpcResponse;
-    log.info("客户端收到服务器相应：{}",response.toString());
+    log.info("客户端收到服务器相应：{}", rpcResponse.toString());
   }
 
 
