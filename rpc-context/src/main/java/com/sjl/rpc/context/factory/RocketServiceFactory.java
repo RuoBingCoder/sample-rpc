@@ -1,6 +1,6 @@
 package com.sjl.rpc.context.factory;
 
-import com.sjl.rpc.context.annotation.RocketReferenceAttribute;
+import com.sjl.rpc.context.spring.annotation.RocketReferenceAttribute;
 import com.sjl.rpc.context.proxy.RocketServiceProxy;
 import org.springframework.beans.factory.FactoryBean;
 

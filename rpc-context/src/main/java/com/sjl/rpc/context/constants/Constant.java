@@ -27,6 +27,13 @@ public class Constant {
   public static final String PONG="pong";
   public static final String RPC="rpc";
   public static final String AUTH="auth";
+  public static final String NETTY="netty";
+  public static final String HTTP="http";
+  public static final String PROTOCOL="rocket.protocol";
+  public static final String TCP_PROTOCOL="tcp";
+  public static final String HTTP_PROTOCOL="http";
+
+
 
 
 

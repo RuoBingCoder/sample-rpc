@@ -1,4 +1,4 @@
-package com.sjl.rpc.context.annotation;
+package com.sjl.rpc.context.spring.annotation;
 
 import com.sjl.rpc.context.constants.Constant;
 import com.sjl.rpc.context.util.AnnotationUtil;

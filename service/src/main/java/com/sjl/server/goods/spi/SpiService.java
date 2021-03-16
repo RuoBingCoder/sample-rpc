@@ -1,6 +1,6 @@
 package com.sjl.server.goods.spi;
 
-import com.sjl.rpc.context.annotation.spi.SPI;
+import com.sjl.rpc.context.spring.annotation.spi.SPI;
 
 /**
  * @author: JianLei

@@ -1,16 +1,11 @@
 package com.sjl.rpc.context.spring.registry;
 
-import com.sjl.rpc.context.annotation.EnableRocketScan;
-import com.sjl.rpc.context.annotation.RocketService;
+import com.sjl.rpc.context.spring.annotation.EnableRocketScan;
+import com.sjl.rpc.context.spring.annotation.RocketService;
 import com.sjl.rpc.context.spring.scanner.RocketScanner;
-import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.support.BeanDefinitionRegistry;
-import org.springframework.context.ApplicationContext;
-import org.springframework.context.ApplicationContextAware;
-import org.springframework.context.ResourceLoaderAware;
 import org.springframework.context.annotation.ImportBeanDefinitionRegistrar;
 import org.springframework.core.annotation.AnnotationAttributes;
-import org.springframework.core.io.ResourceLoader;
 import org.springframework.core.type.AnnotationMetadata;
 import org.springframework.core.type.filter.AnnotationTypeFilter;
 import org.springframework.util.ClassUtils;
@@ -29,15 +24,7 @@ import java.util.stream.Collectors;
  *     <p>负责对标有@RpcService注解的bean进行注册到Spring ioc中,有些地方可能还不够完善后续待完善
  */
 public class RocketRegistry
-    implements ImportBeanDefinitionRegistrar, ResourceLoaderAware, ApplicationContextAware {
-
-  private ApplicationContext applicationContext;
-  private ResourceLoader resourceLoader;
-
-  @Override
-  public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
-    this.applicationContext = applicationContext;
-  }
+    implements ImportBeanDefinitionRegistrar {
 
   @Override
   public void registerBeanDefinitions(
@@ -89,8 +76,5 @@ public class RocketRegistry
     scanner.scan(StringUtils.toStringArray(basePackages));
   }
 
-  @Override
-  public void setResourceLoader(ResourceLoader resourceLoader) {
-    this.resourceLoader = resourceLoader;
-  }
+
 }

@@ -1,6 +1,4 @@
-package com.sjl.rpc.context.annotation;
-
-import org.springframework.core.annotation.AliasFor;
+package com.sjl.rpc.context.spring.annotation;
 
 import java.lang.annotation.*;
 

@@ -2,7 +2,7 @@ package com.sjl.rpc.context.util;
 
 import cn.hutool.core.collection.CollectionUtil;
 import com.google.gson.Gson;
-import com.sjl.rpc.context.annotation.RocketService;
+import com.sjl.rpc.context.spring.annotation.RocketService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;

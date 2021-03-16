@@ -15,9 +15,12 @@ import org.springframework.stereotype.Component;
 @Slf4j
 public class NettyClient extends BaseClientTransporter {
 
+    public static NettyClient instance() {
+        return new NettyClient();
+    }
 
-  public static RocketResponse start(RocketRequest request) {
-    return new NettyClient().connect(request);
-  }
+    public static void start(RocketRequest request) {
+
+    }
 
 }

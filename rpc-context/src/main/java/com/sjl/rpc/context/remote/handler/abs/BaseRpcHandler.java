@@ -102,6 +102,7 @@ public abstract class BaseRpcHandler {
     String providerHost;
     String serviceNameSpace =
         handleCacheMapServiceName(request.getClassName(), request.getVersion());
+    //hosts
     List<String> services = curator.getChildren().forPath(serviceRegistryPath(serviceNameSpace));
     if (CollectionUtil.isEmpty(services)) {
       throw new RocketException("远程服务列表为空");

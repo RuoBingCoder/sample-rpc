@@ -3,3 +3,6 @@ server:
 client:
   ip: 127.0.0.1
 
+rocket:
+  protocol: tcp
+

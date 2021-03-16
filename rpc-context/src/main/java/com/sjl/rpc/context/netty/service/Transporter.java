@@ -2,6 +2,7 @@ package com.sjl.rpc.context.netty.service;
 
 import com.sjl.rpc.context.bean.RocketRequest;
 import com.sjl.rpc.context.bean.RocketResponse;
+import com.sjl.rpc.context.netty.abs.BaseClientTransporter;
 
 /**
  * @author: JianLei
@@ -17,7 +18,7 @@ public interface Transporter {
    }
 
 
-   default RocketResponse connect(RocketRequest request){
-       return null;
+   default void connect(RocketRequest request, BaseClientTransporter ct){
+       return;
    }
 }

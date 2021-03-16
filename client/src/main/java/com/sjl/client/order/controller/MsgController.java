@@ -18,9 +18,9 @@ import java.util.List;
  * @description:
  */
 @RestController
-@RequestMapping("/order")
+@RequestMapping("/msg")
 @Slf4j
-public class OrderController {
+public class MsgController {
   @RocketReference(value = IGoodsService.class, version = "1.0.1")
   private IGoodsService iGoodsService;
 
@@ -30,7 +30,7 @@ public class OrderController {
   //  @Autowired
   //  private RpcServiceTest rpcServiceTest;
   @GetMapping("/getOrder")
-  public String getOrder() {
+  public String getMsg() {
     List<Goods> goodsById = iGoodsService.getGoodsById(1000L);
     log.info("*******Goods is:{}", new Gson().toJson(goodsById));
     return "success";

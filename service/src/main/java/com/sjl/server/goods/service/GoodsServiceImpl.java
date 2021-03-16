@@ -2,7 +2,7 @@ package com.sjl.server.goods.service;
 
 import api.domain.Goods;
 import api.service.IGoodsService;
-import com.sjl.rpc.context.annotation.RocketService;
+import com.sjl.rpc.context.spring.annotation.RocketService;
 
 import java.util.ArrayList;
 import java.util.List;

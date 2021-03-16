@@ -1,7 +1,7 @@
 package com.sjl.server.goods.service;
 
 import api.service.IProductService;
-import com.sjl.rpc.context.annotation.RocketService;
+import com.sjl.rpc.context.spring.annotation.RocketService;
 
 /**
  * @author: JianLei

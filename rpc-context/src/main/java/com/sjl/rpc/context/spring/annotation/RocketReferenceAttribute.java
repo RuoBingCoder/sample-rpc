@@ -1,4 +1,4 @@
-package com.sjl.rpc.context.annotation;
+package com.sjl.rpc.context.spring.annotation;
 
 import lombok.Data;
 
@@ -14,11 +14,20 @@ public class RocketReferenceAttribute {
     private String version;
     private String group;
     private String name;
+    private String protocol;
 
     public RocketReferenceAttribute(Class<?> clazz, String version, String group, String name) {
         this.clazz = clazz;
         this.version = version;
         this.group = group;
         this.name = name;
+    }
+
+    public RocketReferenceAttribute(Class<?> clazz, String version, String group, String name, String protocol) {
+        this.clazz = clazz;
+        this.version = version;
+        this.group = group;
+        this.name = name;
+        this.protocol = protocol;
     }
 }
