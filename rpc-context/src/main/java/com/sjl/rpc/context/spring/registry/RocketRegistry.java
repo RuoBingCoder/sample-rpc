@@ -2,7 +2,7 @@ package com.sjl.rpc.context.spring.registry;
 
 import com.sjl.rpc.context.spring.annotation.EnableRocketScan;
 import com.sjl.rpc.context.spring.annotation.RocketService;
-import com.sjl.rpc.context.spring.scanner.RocketScanner;
+import com.sjl.rpc.context.spring.scanner.RocketRpcClassPathBeanDefinitionScanner;
 import org.springframework.beans.factory.support.BeanDefinitionRegistry;
 import org.springframework.context.annotation.ImportBeanDefinitionRegistrar;
 import org.springframework.core.annotation.AnnotationAttributes;
@@ -41,14 +41,14 @@ public class RocketRegistry
   private static String generateBaseBeanName(AnnotationMetadata importingClassMetadata, int index) {
     return importingClassMetadata.getClassName()
         + "#"
-        + RocketScanner.class.getSimpleName()
+        + RocketRpcClassPathBeanDefinitionScanner.class.getSimpleName()
         + "#"
         + index;
   }
 
   private void registerBeanDefinitions(
       AnnotationAttributes attributes, BeanDefinitionRegistry registry, String beanName) {
-    RocketScanner scanner = new RocketScanner(registry);
+    RocketRpcClassPathBeanDefinitionScanner scanner = new RocketRpcClassPathBeanDefinitionScanner(registry);
     Class<? extends Annotation> annotationClass = attributes.getClass("annotationClass");
     if (!Annotation.class.equals(annotationClass)) {
       scanner.setAnnotationClass(annotationClass);
