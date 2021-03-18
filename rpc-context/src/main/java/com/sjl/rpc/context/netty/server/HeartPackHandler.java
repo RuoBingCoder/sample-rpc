@@ -1,4 +1,4 @@
-package com.sjl.rpc.context.netty.client;
+package com.sjl.rpc.context.netty.server;
 
 import com.sjl.rpc.context.bean.RocketRequest;
 import com.sjl.rpc.context.bean.RocketResponse;
@@ -15,9 +15,9 @@ import lombok.extern.slf4j.Slf4j;
 public class HeartPackHandler extends SimpleChannelInboundHandler<RocketRequest> {
     @Override
     protected void channelRead0(ChannelHandlerContext ctx, RocketRequest msg) throws Exception {
-        log.info("---->>>>>>>服务端接收到💗包内容是:{}", msg.getRequestId());
+        log.info("---->>>>>>>服务端接收到💗包内容是:{}", msg.getHeartPackMsg());
         RocketResponse response=new RocketResponse();
-        response.setReponseId(msg.getRequestId());
+        response.setResponseId(msg.getRequestId());
         response.setResult("this is heart pack");
         ctx.writeAndFlush(response);
     }

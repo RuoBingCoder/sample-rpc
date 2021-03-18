@@ -30,6 +30,7 @@ public class Constant {
   public static final String NETTY="netty";
   public static final String HTTP="http";
   public static final String PROTOCOL="rocket.protocol";
+  public static final String PROTOCOL_PORT="rocket.protocol.port";
   public static final String TCP_PROTOCOL="tcp";
   public static final String HTTP_PROTOCOL="http";
 

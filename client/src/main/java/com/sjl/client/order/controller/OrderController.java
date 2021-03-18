@@ -5,6 +5,7 @@ import api.service.IGoodsService;
 import api.service.IProductService;
 import com.google.gson.Gson;
 import com.sjl.rpc.context.spring.annotation.RocketReference;
+import com.sjl.rpc.context.util.RocketContext;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -38,6 +39,7 @@ public class OrderController {
 
   @GetMapping("/hello")
   public String hello() {
+    RocketContext.getContext().setAttachment("test","rocket msg");
     return iGoodsService.helloRpc("rpc");
   }
 

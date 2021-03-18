@@ -1,4 +1,4 @@
-package com.sjl.rpc.context.spring.event;
+package com.sjl.rpc.context.spring.listener;
 
 import cn.hutool.core.collection.CollectionUtil;
 import com.sjl.rpc.context.constants.Constant;
@@ -18,7 +18,7 @@ import java.util.Map;
  * @description:
  */
 @Slf4j
-public class RpcRegistryListener implements ApplicationListener<ContextRefreshedEvent> {
+public class RpcServerRegistryListener implements ApplicationListener<ContextRefreshedEvent> {
   @Override
   public void onApplicationEvent(ContextRefreshedEvent contextRefreshedEvent) {
     if (contextRefreshedEvent.getApplicationContext().getParent() == null) {

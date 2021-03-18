@@ -1,5 +1,7 @@
 package com.sjl.rpc.context.netty.server;
 
+import cn.hutool.core.collection.CollectionUtil;
+import com.alibaba.fastjson.JSONObject;
 import com.google.gson.Gson;
 import com.sjl.rpc.context.bean.RocketRequest;
 import com.sjl.rpc.context.bean.RocketResponse;
@@ -8,10 +10,12 @@ import io.netty.channel.SimpleChannelInboundHandler;
 import io.netty.handler.timeout.IdleState;
 import io.netty.handler.timeout.IdleStateEvent;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.cglib.reflect.FastClass;
 import org.springframework.cglib.reflect.FastMethod;
 
 import java.lang.reflect.InvocationTargetException;
+import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
@@ -45,14 +49,21 @@ public class NettyServerHandler extends SimpleChannelInboundHandler<RocketReques
 
     @Override
     protected void channelRead0(ChannelHandlerContext ctx, RocketRequest request) throws Exception {
-
+        log.info("request params:{}",JSONObject.toJSONString(request));
         /*构造RPC响应对象*/
         RocketResponse response = new RocketResponse();
         /*设置响应ID，也就是上面的请求ID*/
-        response.setReponseId(request.getRequestId());
         if (isHeartPack(request)) {
             ctx.fireChannelRead(request);
             return;
+        }
+        response.setResponseId(request.getRequestId());
+        //附加参数打印
+        final Map<String, String> rpcAttachments = request.getRpcAttachments();
+        if (CollectionUtil.isNotEmpty(rpcAttachments)) {
+            rpcAttachments.forEach((k, v) -> {
+                log.info("Attachment key is:{} value is:{}", k, JSONObject.toJSONString(v));
+            });
         }
 
         try {
@@ -69,7 +80,7 @@ public class NettyServerHandler extends SimpleChannelInboundHandler<RocketReques
     }
 
     private boolean isHeartPack(RocketRequest request) {
-        return request.getRequestId() != null && request.getClassName() == null && request.getMethodName() == null && request.getParameters() == null && request.getParameterTypes() == null && request.getVersion() == null;
+        return StringUtils.isNotBlank(request.getHeartPackMsg()) && StringUtils.isBlank(request.getRequestId());
     }
 
     /**
@@ -81,7 +92,7 @@ public class NettyServerHandler extends SimpleChannelInboundHandler<RocketReques
      */
     private Object handle(RocketRequest request)
             throws InvocationTargetException, ClassNotFoundException {
-        log.info("handle 入参为:{}", new Gson().toJson(request.getClassName()));
+        log.info("handle 入参为:className:{} methodName:{} ",request.getClassName(),request.getMethodName());
         String className = request.getClassName();
         Object serviceBean = handlerMap.get(className);
 

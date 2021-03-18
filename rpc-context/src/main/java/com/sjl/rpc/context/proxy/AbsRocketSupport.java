@@ -1,6 +1,8 @@
 package com.sjl.rpc.context.proxy;
 
+import cn.hutool.core.collection.CollectionUtil;
 import com.alibaba.fastjson.JSONObject;
+import com.sjl.rpc.context.util.RocketContext;
 import com.sjl.rpc.context.netty.helper.TaskThreadPoolHelper;
 import com.sjl.rpc.context.spring.annotation.RocketReferenceAttribute;
 import com.sjl.rpc.context.bean.RocketRequest;
@@ -14,6 +16,7 @@ import lombok.extern.slf4j.Slf4j;
 
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
+import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.*;
 
@@ -39,7 +42,7 @@ public abstract class AbsRocketSupport implements InvocationHandler {
                 log.info("-->>>>>>>>response result is:{}", response.getResult());
                 return response.getResult();
             } else if (protocol instanceof RocketHttpProtocol) {
-
+                //todo
                 return null;
 
             }
@@ -54,6 +57,8 @@ public abstract class AbsRocketSupport implements InvocationHandler {
         RocketNettyProtocol nettyProtocol = (RocketNettyProtocol) protocol;
         NettyClient nettyClient = nettyProtocol.export();
         final ExecutorService executor = TaskThreadPoolHelper.getExecutor();
+        setAttachments(request);
+        log.info("#########client get  Attachment is:{}", JSONObject.toJSONString(request.getRpcAttachments() == null ? "a" : request.getRpcAttachments()));
         executor.execute(()->{
             log.info("netty connect thread info:{}",Thread.currentThread().getName());
             nettyClient.connect(request,nettyClient);
@@ -63,6 +68,13 @@ public abstract class AbsRocketSupport implements InvocationHandler {
         });
         TaskThreadPoolHelper.addExecutor(executor); //GC thread pool
         return nettyClient;
+    }
+
+    private void setAttachments(RocketRequest request) {
+        final Map<String, String> attachments = RocketContext.getContext().getAttachments();
+        if (CollectionUtil.isNotEmpty(attachments)){
+            request.setAttachments(attachments);
+        }
     }
 
     private Object doHandleHttp(RocketRequest request, Object protocol) {

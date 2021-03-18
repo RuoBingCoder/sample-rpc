@@ -1,4 +1,4 @@
-package com.sjl.rpc.context.remote.registry;
+package com.sjl.rpc.context.remote.discover.service;
 
 /**
  * @author: JianLei

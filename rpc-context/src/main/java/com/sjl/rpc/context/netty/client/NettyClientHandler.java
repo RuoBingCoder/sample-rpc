@@ -103,7 +103,7 @@ public class NettyClientHandler extends SimpleChannelInboundHandler<RocketRespon
                 if (idle_count <= 3) {   //设置发送次数
                     idle_count++;
                     RocketRequest request = new RocketRequest();
-                    request.setRequestId("客户端心跳包->" + count);
+                    request.setHeartPackMsg("客户端心跳包->" + count);
                     ctx.channel().writeAndFlush(request);
                 } else {
                     System.out.println("不再发送心跳请求了！");

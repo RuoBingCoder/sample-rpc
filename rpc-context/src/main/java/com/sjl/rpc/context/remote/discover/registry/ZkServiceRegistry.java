@@ -1,13 +1,13 @@
-package com.sjl.rpc.context.remote.registry;
+package com.sjl.rpc.context.remote.discover.registry;
 
+import com.sjl.rpc.context.remote.discover.service.IServiceRegistry;
+import com.sjl.rpc.context.remote.discover.abs.BaseRpcHandler;
 import com.sjl.rpc.context.spring.annotation.RocketService;
 import com.sjl.rpc.context.exception.RocketException;
 import com.sjl.rpc.context.util.SpringBeanUtil;
 import com.sjl.rpc.context.remote.client.CuratorClient;
-import com.sjl.rpc.context.remote.handler.abs.BaseRpcHandler;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.beans.factory.BeanFactoryAware;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.context.EnvironmentAware;
@@ -19,7 +19,6 @@ import org.springframework.stereotype.Component;
 import java.util.concurrent.ConcurrentHashMap;
 
 import static com.sjl.rpc.context.constants.Constant.PROTOCOL;
-import static com.sjl.rpc.context.constants.Constant.TCP_PROTOCOL;
 
 /**
  * @author: JianLei
@@ -30,18 +29,18 @@ import static com.sjl.rpc.context.constants.Constant.TCP_PROTOCOL;
 @Component
 @DependsOn("springBeanUtil")
 public class ZkServiceRegistry extends BaseRpcHandler
-        implements IServiceRegistry, InitializingBean, EnvironmentAware, DisposableBean {
+        implements IServiceRegistry,  EnvironmentAware,  DisposableBean {
+    private ConfigurableEnvironment env;
 
-    private ConfigurableEnvironment environment;
 
     @Override
     public void registry(Class<?> serviceName, String version) throws Exception {
         // 预留接口
         if (serviceName != null) {
-            boolean flag = doCheckServiceNodeIsExists(serviceName.getName(), version);
+            boolean flag = super.isExistServiceNode(serviceName.getName(), version);
             if (flag) {
-                createServicePath(
-                        CuratorClient.instance(), handleCacheMapServiceName(serviceName.getName(), version));
+                super.createServicePath(
+                        CuratorClient.instance(), super.handleCacheMapServiceName(serviceName.getName(), version));
             }
             return;
         }
@@ -54,10 +53,9 @@ public class ZkServiceRegistry extends BaseRpcHandler
                         final String v = sjlRpcService.version();
                         //TODO 多协议
                         String protocol = getProtocol();
-                        boolean flag = doCheckServiceNodeIsExists(beanName, v);
-                        if (!flag) {
-                            createServicePath(CuratorClient.instance(), handleCacheMapServiceName(beanName, v));
-                        }
+                            super.createServicePath(CuratorClient.instance(), super.handleCacheMapServiceName(beanName, v));
+
+
                     } catch (Exception e) {
                         log.error("====>发布服务出现异常", e);
                         throw new RocketException("发布服务出现异常");
@@ -66,7 +64,7 @@ public class ZkServiceRegistry extends BaseRpcHandler
     }
 
     private String getProtocol() {
-        final String proto = environment.getProperty(PROTOCOL);
+        final String proto = env.getProperty(PROTOCOL);
         if (StringUtils.isBlank(proto)) {
             throw new RocketException("protocol is null");
         }
@@ -78,17 +76,21 @@ public class ZkServiceRegistry extends BaseRpcHandler
         log.info("==============开始销毁缓存map,curator关闭!================");
         cacheServiceMap.clear();
         CuratorClient.instance().close();
+
+    }
+
+
+
+
+    @Override
+    protected ConfigurableEnvironment getEnvironment() {
+        return this.env;
     }
 
     @Override
-    public void afterPropertiesSet() throws Exception {
-        registry(null, null);
-    }
-
-    @Override
-    public void setEnvironment(Environment env) {
-        if (env instanceof ConfigurableEnvironment) {
-            environment = (ConfigurableEnvironment) env;
+    public void setEnvironment(Environment environment) {
+        if (environment instanceof ConfigurableEnvironment) {
+            this.env = (ConfigurableEnvironment) environment;
         }
     }
 }

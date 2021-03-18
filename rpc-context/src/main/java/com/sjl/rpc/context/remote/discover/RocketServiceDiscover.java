@@ -3,8 +3,12 @@ package com.sjl.rpc.context.remote.discover;
 import com.alibaba.fastjson.JSONObject;
 import com.sjl.rpc.context.exception.RocketException;
 import com.sjl.rpc.context.bean.RocketRequest;
-import com.sjl.rpc.context.remote.handler.abs.BaseRpcHandler;
+import com.sjl.rpc.context.remote.discover.abs.BaseRpcHandler;
+import com.sjl.rpc.context.remote.discover.service.IRocketServiceDiscover;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.EnvironmentAware;
+import org.springframework.core.env.ConfigurableEnvironment;
+import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Component;
 
 /**
@@ -14,8 +18,9 @@ import org.springframework.stereotype.Component;
  */
 @Slf4j
 @Component
-public class RocketServiceDiscover extends BaseRpcHandler implements IRocketServiceDiscover {
+public class RocketServiceDiscover extends BaseRpcHandler implements IRocketServiceDiscover, EnvironmentAware {
 
+  private ConfigurableEnvironment env;
 
   @Override
   public String selectService(RocketRequest request) {
@@ -25,6 +30,18 @@ public class RocketServiceDiscover extends BaseRpcHandler implements IRocketServ
     } catch (Exception e) {
       log.error("发现服务异常", e);
       throw new RocketException("发现服务异常,异常接口为:"+request.getClassName()+"."+request.getMethodName());
+    }
+  }
+
+  @Override
+  protected ConfigurableEnvironment getEnvironment() {
+    return this.env;
+  }
+
+  @Override
+  public void setEnvironment(Environment environment) {
+    if (environment instanceof ConfigurableEnvironment) {
+      this.env = (ConfigurableEnvironment) environment;
     }
   }
 }

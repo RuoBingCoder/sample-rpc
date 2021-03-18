@@ -74,8 +74,8 @@ public abstract class BaseClientTransporter implements Transporter {
                         }
                     });
             channelFuture.channel().writeAndFlush(request).sync();
-            channelFuture.channel().closeFuture().sync(); //阻塞主线程
             log.info("客户端连接远程服务成功!");
+            channelFuture.channel().closeFuture().sync(); //阻塞主线程
         } catch (Exception e) {
             throw new RocketException("客户端远程连接异常");
 

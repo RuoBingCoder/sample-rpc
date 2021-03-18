@@ -13,7 +13,7 @@ import java.io.Serializable;
 public class RocketResponse implements Serializable {
     private static final long serialVersionUID = 3374714188555167852L;
     /*响应ID*/
-    private String reponseId;
+    private String responseId;
     /*异常对象*/
     private Throwable error;
     /*响应结果*/
