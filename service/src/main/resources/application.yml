@@ -1,4 +1,6 @@
 server:
-  port: 8081
+  port: 8182
 rocket:
-  protocol: tcp
+  protocol:
+    name: tcp
+    port: 8817

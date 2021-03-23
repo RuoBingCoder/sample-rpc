@@ -1,2 +1,2 @@
-org.springframework.context.ApplicationListener=com.sjl.rpc.context.spring.listener.RpcServiceRegistryListener,\
-  com.sjl.rpc.context.spring.listener.RpcServerRegistryListener
+org.springframework.context.ApplicationListener=com.github.rpc.context.spring.listener.RpcServiceRegistryListener,\
+  com.github.rpc.context.spring.listener.RpcServerRegistryListener
