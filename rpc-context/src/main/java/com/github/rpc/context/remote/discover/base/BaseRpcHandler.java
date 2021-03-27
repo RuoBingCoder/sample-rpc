@@ -55,13 +55,10 @@ public abstract class BaseRpcHandler implements EnvironmentAware {
         if (environment instanceof ConfigurableEnvironment) {
             this.env = (ConfigurableEnvironment) environment;
             curator = ZookeeperClient.instance(env);
-            loadCacheFile();
+
         }
     }
 
-    private void loadCacheFile() {
-
-    }
 
     /**
      * 校验zk服务是否存在节点
