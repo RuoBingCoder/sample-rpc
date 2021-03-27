@@ -10,7 +10,7 @@ import org.springframework.cglib.reflect.FastMethod;
  * @description DelegateHandle
  */
 
-public class DelegateHandle {
+public class DelegateFilterInvoker {
 
     public RocketResponse invoke(RocketResponse response, FastMethod method, Object object, Object[] params){
         final ExtensionLoader extensionLoader = ExtensionLoader.getExtensionLoader(RocketFilter.class);

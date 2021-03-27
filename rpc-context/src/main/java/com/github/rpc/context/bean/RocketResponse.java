@@ -19,4 +19,6 @@ public class RocketResponse implements Serializable {
     /*响应结果*/
     private Object result;
 
+    private Boolean isHeartPack;
+
 }

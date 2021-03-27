@@ -1,8 +1,9 @@
-package com.github.rpc.context.netty.client;
+package com.github.rpc.context.netty.handle;
 
 import com.github.rpc.context.bean.RocketRequest;
 import com.github.rpc.context.bean.RocketResponse;
-import com.github.rpc.context.netty.abs.BaseClientTransporter;
+import com.github.rpc.context.netty.transport.BaseClientTransporter;
+import com.github.rpc.context.netty.channel.NettyChannel;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelHandlerContext;
@@ -14,8 +15,11 @@ import io.netty.util.CharsetUtil;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.Date;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * @author: jianlei
@@ -49,6 +53,10 @@ public class NettyClientHandler extends SimpleChannelInboundHandler<RocketRespon
 
     private BaseClientTransporter ct;
 
+    private final AtomicInteger heatbeatReceiveCount = new AtomicInteger(4);
+
+    private final AtomicBoolean isEx = new AtomicBoolean(false);
+
     public NettyClientHandler(BaseClientTransporter ct) {
         this.ct = ct;
     }
@@ -57,22 +65,28 @@ public class NettyClientHandler extends SimpleChannelInboundHandler<RocketRespon
     }
 
     @Override
-    protected void channelRead0(ChannelHandlerContext channelHandlerContext, RocketResponse rpcResponse) throws Exception {
+    protected void channelRead0(ChannelHandlerContext ctx, RocketResponse rpcResponse) throws Exception {
         //简单赋值
         log.info("客户端收到服务器相应：{}", rpcResponse == null ? "---" : rpcResponse.toString());
-        executor.execute(() -> {
+        assert rpcResponse != null;
+        final NettyChannel channel = NettyChannel.getOrAddChannel(ctx.channel(), rpcResponse.getResponseId());
+        if (rpcResponse.getIsHeartPack()) {
+            heatbeatReceiveCount.incrementAndGet();
+        }
+        channel.receive(rpcResponse);
+       /* executor.execute(() -> {
             assert rpcResponse != null;
             if (!ct.offer(rpcResponse)) {
                 throw new RuntimeException("rpc result add exception");
             }
-        });
+        });*/
+
         count++;
     }
 
     @Override
     public void channelActive(ChannelHandlerContext ctx) throws Exception {
         log.info("-------server active------");
-
         ctx.fireChannelActive();
     }
 
@@ -82,6 +96,9 @@ public class NettyClientHandler extends SimpleChannelInboundHandler<RocketRespon
     @Override
     public void channelInactive(ChannelHandlerContext ctx) throws Exception {
         System.out.println("关闭连接时：" + new Date());
+        final NettyChannel channel = NettyChannel.getOrAddChannel(ctx.channel(), null);
+        channel.removeChannel(ctx.channel());
+
     }
 
     /**
@@ -103,9 +120,38 @@ public class NettyClientHandler extends SimpleChannelInboundHandler<RocketRespon
                     ctx.channel().writeAndFlush(request);
                 } else {
                     System.out.println("不再发送心跳请求了！");
+                    inactive(ctx);
+
                 }
                 fcount++;
             }
         }
+    }
+
+    private void inactive(ChannelHandlerContext ctx) {
+        CompletableFuture.runAsync(() -> {
+            while (!isEx.get()) {
+                try {
+                    Thread.sleep(1000);
+                    if (heatbeatReceiveCount.get() == 4) {
+                        ctx.fireChannelInactive();
+                        heatbeatReceiveCount.set(0);
+                    }
+                } catch (Exception e) {
+                    isEx.set(true);
+                }
+            }
+
+        });
+    }
+
+    @Override
+    public void channelRegistered(ChannelHandlerContext ctx) throws Exception {
+        super.channelRegistered(ctx);
+    }
+
+    @Override
+    public void channelUnregistered(ChannelHandlerContext ctx) throws Exception {
+        super.channelUnregistered(ctx);
     }
 }

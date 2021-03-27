@@ -1,16 +1,15 @@
-package com.github.rpc.context.netty.abs;
+package com.github.rpc.context.netty.transport;
 
 import com.alibaba.fastjson.JSONObject;
 import com.github.rpc.context.bean.RocketRequest;
 import com.github.rpc.context.exception.RocketException;
-import com.github.rpc.context.netty.client.ClientInit;
-import com.github.rpc.context.netty.helper.TaskThreadPoolHelper;
+import com.github.rpc.context.netty.init.ClientInit;
 import com.github.rpc.context.remote.discover.RocketServiceDiscover;
 import com.github.rpc.context.bean.RocketResponse;
-import com.github.rpc.context.netty.service.Transporter;
 import com.github.rpc.context.util.SpringBeanUtil;
 import com.github.rpc.context.util.StringUtils;
 import io.netty.bootstrap.Bootstrap;
+import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.EventLoop;
 import io.netty.channel.EventLoopGroup;
@@ -18,6 +17,9 @@ import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioSocketChannel;
 import lombok.extern.slf4j.Slf4j;
 
+import java.net.InetSocketAddress;
+import java.net.SocketAddress;
+import java.nio.file.Paths;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 
@@ -31,39 +33,35 @@ public abstract class BaseClientTransporter implements Transporter {
     protected RocketResponse rpcResponse;
     protected EventLoopGroup loopGroup = new NioEventLoopGroup();
     private final Bootstrap bootstrap = new Bootstrap();
-    protected LinkedBlockingQueue<RocketResponse> responseQue = new LinkedBlockingQueue<>(10);
+    protected LinkedBlockingQueue<RocketResponse> responseQue = new LinkedBlockingQueue<>(1);
+    protected Channel channel;
 
     @Override
-    public void connect(RocketRequest request, BaseClientTransporter ct) {
+    public void connect(String[] hosts) {
+        ChannelFuture channelFuture;
         try {
-
             bootstrap
                     .group(loopGroup)
                     .channel(NioSocketChannel.class)
-                    .handler(new ClientInit(ct));
+                    .handler(new ClientInit(this));
 
-            String[] providerHost = getProviderHost(request);
-            log.info("获取远程服务地址是:{}", JSONObject.toJSONString(providerHost));
-            ChannelFuture channelFuture =
-                    bootstrap.connect(providerHost[0], Integer.parseInt(providerHost[1])).sync();
-            doListener(channelFuture, request, ct);
+            log.info("获取远程服务地址是:{}", JSONObject.toJSONString(hosts));
+            channelFuture =
+                    bootstrap.connect(getAddress(hosts)).sync();
+            doListener(channelFuture, hosts);
         } catch (Exception e) {
             log.error("客户端连接异常", e);
+//            loopGroup.shutdownGracefully();
         }
     }
 
-
-    protected String[] getProviderHost(RocketRequest request) {
-        RocketServiceDiscover rpcServiceDiscover = SpringBeanUtil.getBean(RocketServiceDiscover.class);
-        return split(request, rpcServiceDiscover);
+    private SocketAddress getAddress(String[] providerHost) {
+        return new InetSocketAddress(providerHost[0], Integer.parseInt(providerHost[1]));
     }
 
-    private String[] split(RocketRequest request, RocketServiceDiscover rpcServiceDiscover) {
-        final String rpcMeta = rpcServiceDiscover.selectService(request);
-        return StringUtils.split(rpcMeta);
-    }
 
-    protected void doListener(ChannelFuture channelFuture, RocketRequest request, BaseClientTransporter ct) {
+
+    protected void doListener(ChannelFuture channelFuture, String[] hosts) {
         try {
 
             channelFuture.addListener(
@@ -72,21 +70,24 @@ public abstract class BaseClientTransporter implements Transporter {
                             EventLoop loop = channelFuture.channel().eventLoop();
                             loop.schedule(
                                     () -> {
-                                        connect(request, ct);
+                                        //重新连接
+                                        connect(hosts);
                                     },
                                     1L,
                                     TimeUnit.SECONDS);
                         }
                     });
-            channelFuture.channel().writeAndFlush(request).sync();
+            this.channel = channelFuture.channel();
+//            channelFuture.channel().writeAndFlush(request);
             log.info("客户端连接远程服务成功!");
-            channelFuture.channel().closeFuture().sync(); //阻塞主线程
+//            channelFuture.channel().closeFuture().sync(); //阻塞主线程
         } catch (Exception e) {
+            log.error("客户端远程连接异常: ", e);
             throw new RocketException("客户端远程连接异常");
-
         } finally {
-            loopGroup.shutdownGracefully();
-            TaskThreadPoolHelper.signalStartClear(); //clear netty rpc thread
+//            this.channel=null;
+//            loopGroup.shutdownGracefully();
+//            TaskThreadPoolHelper.signalStartClear(); //clear netty rpc thread
         }
     }
 
@@ -104,5 +105,12 @@ public abstract class BaseClientTransporter implements Transporter {
 
     public RocketResponse take() throws InterruptedException {
         return this.responseQue.take();
+    }
+
+    public Channel getChannel() {
+        if (this.channel == null) {
+            throw new RocketException("channel is closed!");
+        }
+        return this.channel;
     }
 }

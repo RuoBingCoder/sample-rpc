@@ -1,4 +1,4 @@
-package com.github.rpc.context.remote.discover.abs;
+package com.github.rpc.context.remote.discover.base;
 
 import cn.hutool.core.collection.CollectionUtil;
 import com.alibaba.fastjson.JSONObject;
@@ -7,7 +7,7 @@ import com.github.rpc.context.constants.Constant;
 import com.github.rpc.context.bean.RocketRequest;
 import com.github.rpc.context.remote.handler.abs.BaseLoadBalance;
 import com.github.rpc.context.util.SpringBeanUtil;
-import com.github.rpc.context.remote.client.CuratorClient;
+import com.github.rpc.context.remote.client.ZookeeperClient;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.curator.framework.CuratorFramework;
@@ -16,12 +16,18 @@ import org.apache.curator.framework.recipes.cache.PathChildrenCacheListener;
 import org.apache.zookeeper.CreateMode;
 import org.apache.zookeeper.KeeperException;
 import org.apache.zookeeper.data.Stat;
+import org.apache.zookeeper.server.util.ConfigUtils;
+import org.springframework.context.EnvironmentAware;
 import org.springframework.core.env.ConfigurableEnvironment;
+import org.springframework.core.env.Environment;
 
+import java.io.*;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
@@ -30,14 +36,32 @@ import java.util.concurrent.ConcurrentHashMap;
  * @description: Rpc请求处理
  */
 @Slf4j
-public abstract class BaseRpcHandler {
+public abstract class BaseRpcHandler implements EnvironmentAware {
     protected static final Map<String, List<String>> cacheServiceMap = new ConcurrentHashMap<>();
     public static BaseLoadBalance loadBalance;
-    private static final CuratorFramework curator = CuratorClient.instance();
+    private CuratorFramework curator;
     protected volatile Boolean isService;
     protected volatile String version;
 
-    protected abstract ConfigurableEnvironment getEnvironment();
+    protected ConfigurableEnvironment env;
+
+    protected File file;
+
+    protected final Properties properties = new Properties();
+
+
+    @Override
+    public void setEnvironment(Environment environment) {
+        if (environment instanceof ConfigurableEnvironment) {
+            this.env = (ConfigurableEnvironment) environment;
+            curator = ZookeeperClient.instance(env);
+            loadCacheFile();
+        }
+    }
+
+    private void loadCacheFile() {
+
+    }
 
     /**
      * 校验zk服务是否存在节点
@@ -80,15 +104,15 @@ public abstract class BaseRpcHandler {
     protected void createServicePath(CuratorFramework curator, String serviceName) throws Exception {
         String servicePath = handleCurrentServicePath(serviceName);
         try {
-                try {
-                    curator
-                            .create()
-                            .creatingParentsIfNeeded()
-                            .withMode(CreateMode.EPHEMERAL)
-                            .forPath(servicePath);
-                } catch (Exception e) {
-                    //说明节点存在不做异常处理
-                }
+            try {
+                curator
+                        .create()
+                        .creatingParentsIfNeeded()
+                        .withMode(CreateMode.EPHEMERAL)
+                        .forPath(servicePath);
+            } catch (Exception e) {
+                //说明节点存在不做异常处理
+            }
 
         } catch (Exception e) {
             log.error("====>create zk node error!error message is:", e);
@@ -111,9 +135,9 @@ public abstract class BaseRpcHandler {
      */
     protected String handleCurrentServicePath(String serviceName) throws UnknownHostException {
         if (isService) {
-            return Constant.ROOT_PATH + serviceName + "/" + Constant.PROVIDER + "/" + getProtocolHost()+"&"+version;
+            return Constant.ROOT_PATH + serviceName + "/" + Constant.PROVIDER + "/" + getProtocolHost() + "&" + version;
         } else {
-            return Constant.ROOT_PATH + serviceName + "/" + Constant.CONSUMER + "/" + getProtocolHost()+"&"+version;
+            return Constant.ROOT_PATH + serviceName + "/" + Constant.CONSUMER + "/" + getProtocolHost() + "&" + version;
 
         }
     }
@@ -124,7 +148,7 @@ public abstract class BaseRpcHandler {
 
     private String getProtocolHost() {
         try {
-            final String port = getEnvironment().getProperty(Constant.PROTOCOL_PORT);
+            final String port = env.getProperty(Constant.PROTOCOL_PORT);
             if (StringUtils.isBlank(port)) {
                 return InetAddress.getLocalHost().getHostAddress() + ":8817";
             }
@@ -154,19 +178,35 @@ public abstract class BaseRpcHandler {
      */
     protected String getChildNodePath(RocketRequest request) throws Exception {
         String providerHost;
-        String serviceNameSpace =
-                handleCacheMapServiceName(request.getClassName());
+        String serviceNameSpace = handleCacheMapServiceName(request.getClassName());
         //hosts
-        List<String> services = curator.getChildren().forPath(serviceRegistryPath(serviceNameSpace,request.getVersion()));
-        if (CollectionUtil.isEmpty(services)) {
-            throw new RocketException("远程服务列表为空");
+        List<String> services = null;
+        try {
+            final String serviceNodePath = serviceRegistryPath(serviceNameSpace, request.getVersion());
+            services = curator.getChildren().forPath(serviceNodePath);
+            String fileName = System.getProperty("user.home") + "/rocket-rpc/provider_" + request.getVersion() + ".cache";
+            if (StringUtils.isNotBlank(fileName)) {
+                file = new File(fileName);
+                if (!file.exists() && file.getParentFile() != null && !file.getParentFile().exists()) {
+                    if (!file.getParentFile().mkdirs()) {
+                        throw new IllegalArgumentException("Invalid registry cache file " + file + ", cause: Failed to create directory " + file.getParentFile() + "!");
+                    }
+                }
+            }
+            loadProperties();
+            if (CollectionUtil.isEmpty(services)) {
+                services = getCacheServicesByKey(serviceNodePath);
+            }
+            saveProperties(serviceNodePath, request.getVersion(), services);
+        } catch (Exception e) {
+
         }
         // 先进行负载
         // 1.首先判断服务名是否存在, 2.在判断IP是否存在
         loadBalance = SpringBeanUtil.getBean(BaseLoadBalance.class);
         if (cacheServiceMap.get(serviceNameSpace) != null) {
             log.info("开始走缓存获取服务 服务名称为:{} IP:{}", serviceNameSpace, cacheServiceMap.get(serviceNameSpace));
-            return doSelectService(cacheServiceMap.get(serviceNameSpace),request.getVersion());
+            return doSelectService(cacheServiceMap.get(serviceNameSpace), request.getVersion());
         } else {
             // 更新缓存服务地址
             cacheServiceMap.put(serviceNameSpace, services);
@@ -174,18 +214,75 @@ public abstract class BaseRpcHandler {
             log.info("cacheServiceMap value is:{}", JSONObject.toJSONString(cacheServiceMap));
         }
         // 设置监听
-        registryListener(curator, serviceNameSpace,request.getVersion());
+        registryListener(curator, serviceNameSpace, request.getVersion());
 
         return providerHost;
     }
 
+    private List<String> getCacheServicesByKey(String serviceNodePath) {
+        final String value = properties.getProperty(serviceNodePath);
+        if (value == null) {
+            throw new RocketException("remote service is null,retry load local cache service is null! service path is:" + serviceNodePath);
+        }
+        final String list = com.github.rpc.context.util.StringUtils.cleanLastSymbol(value);
+        if (list.contains(",")) {
+            String[] split = list.split(",");
+            return Arrays.asList(split);
+        }
+        return null;
+    }
+
+    private void saveProperties(String serviceRegistryPath, String version, List<String> services) throws IOException {
+        file = new File(System.getProperty("user.home") + "/rocket-rpc/provider_" + version + ".cache");
+        if (!file.exists()) {
+            file.createNewFile();
+        }
+        properties.setProperty(serviceRegistryPath, toString(services));
+        try (FileOutputStream fileOutputStream = new FileOutputStream(file)) {
+            properties.store(fileOutputStream, "rocket-rpc Cache");
+        }
+    }
+
+    private String toString(List<String> services) {
+        StringBuilder sb = new StringBuilder();
+        for (String service : services) {
+            sb.append(service).append(",");
+        }
+        return sb.toString();
+    }
+
+    private void loadProperties() {
+        if (file != null && file.exists()) {
+            InputStream in = null;
+            try {
+                in = new FileInputStream(file);
+                properties.load(in);
+                if (log.isInfoEnabled()) {
+                    log.info("Load registry cache file " + file + ", data: " + properties);
+                }
+            } catch (Throwable e) {
+                log.warn("Failed to load registry cache file " + file, e);
+            } finally {
+                if (in != null) {
+                    try {
+                        in.close();
+                    } catch (IOException e) {
+                        log.warn(e.getMessage(), e);
+                    }
+                }
+            }
+        }
+    }
+
+
     /**
      * 注册监听节点事件
-     *  @param curator
+     *
+     * @param curator
      * @param nameSpace
      * @param serviceNameSpace
      */
-    private void registryListener(CuratorFramework curator, String serviceNameSpace , String version) {
+    private void registryListener(CuratorFramework curator, String serviceNameSpace, String version) {
         PathChildrenCache pathChildrenCache =
                 new PathChildrenCache(curator, serviceRegistryPath(serviceNameSpace, version), true);
         try {
@@ -203,7 +300,9 @@ public abstract class BaseRpcHandler {
                             event == null || event.getData() == null ? "==" : new String(event.getData().getData()));
                     // 更新缓存
                     List<String> services =
-                            curator.getChildren().forPath(serviceRegistryPath(serviceNameSpace, serviceNameSpace));
+                            curator.getChildren().forPath(serviceRegistryPath(serviceNameSpace, version));
+                    //update local cache
+                    saveProperties(serviceRegistryPath(serviceNameSpace, version),version,services);
                     cacheServiceMap.put(serviceNameSpace, services);
                 };
         pathChildrenCache.getListenable().addListener(listener);
@@ -216,7 +315,7 @@ public abstract class BaseRpcHandler {
      * @throws Exception
      */
     private String doSelectService(List<String> serviceNameSpace, String version) throws Exception {
-        return loadBalance.loadBalance(serviceNameSpace,version);
+        return loadBalance.loadBalance(serviceNameSpace, version);
     }
 
     /**
@@ -227,7 +326,7 @@ public abstract class BaseRpcHandler {
         return name;
     }
 
-    protected abstract void registry(Class<?> serviceName, Object service,String version, Boolean isService);
+    protected abstract void registry(Class<?> serviceName, Object service, String version, Boolean isService);
 
 
     public static void main(String[] args) throws Exception {
@@ -238,10 +337,10 @@ public abstract class BaseRpcHandler {
 //                CuratorClient.instance().getChildren().forPath("/test/api.service.IGoodsService&1.0.1");
 //        System.out.println("-------->" + JSONObject.toJSONString(strings));
         //    /rocket/api.service.IGoodsService/provider/192.168.1.14:8817&1.0.1
-         Stat stat = curator
+        /*Stat stat = curator
                 .checkExists()
                 .forPath("/rocket/api.service.IGoodsService/provider/192.168.1.14:8817&1.0.1");
-        System.out.println(stat==null);
+        System.out.println(stat == null);*/
 
     }
 }

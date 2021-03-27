@@ -1,2 +1,3 @@
 org.springframework.context.ApplicationListener=com.github.rpc.context.spring.listener.RpcServiceRegistryListener,\
   com.github.rpc.context.spring.listener.RpcServerRegistryListener
+org.springframework.boot.autoconfigure.EnableAutoConfiguration=com.github.rpc.context.config.RocketRpcComponentScanConfig

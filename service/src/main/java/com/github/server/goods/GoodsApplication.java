@@ -11,7 +11,6 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 
 @SpringBootApplication
-@ComponentScan({"com.github.server", "com.github.rpc.context"})
 @EnableRocketScan(basePackages = "com.github.server.goods.service")
 @Slf4j
 public class GoodsApplication {

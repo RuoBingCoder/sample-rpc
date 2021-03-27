@@ -2,7 +2,7 @@ package com.github.rpc.context.remote.discover;
 
 import com.alibaba.fastjson.JSONObject;
 import com.github.rpc.context.exception.RocketException;
-import com.github.rpc.context.remote.discover.abs.BaseRpcHandler;
+import com.github.rpc.context.remote.discover.base.BaseRpcHandler;
 import com.github.rpc.context.bean.RocketRequest;
 import com.github.rpc.context.remote.discover.service.IRocketServiceDiscover;
 import lombok.extern.slf4j.Slf4j;
@@ -33,10 +33,6 @@ public class RocketServiceDiscover extends BaseRpcHandler implements IRocketServ
     }
   }
 
-  @Override
-  protected ConfigurableEnvironment getEnvironment() {
-    return this.env;
-  }
 
   @Override
   protected void registry(Class<?> serviceName, Object service, String version, Boolean isService) {
@@ -44,10 +40,4 @@ public class RocketServiceDiscover extends BaseRpcHandler implements IRocketServ
   }
 
 
-  @Override
-  public void setEnvironment(Environment environment) {
-    if (environment instanceof ConfigurableEnvironment) {
-      this.env = (ConfigurableEnvironment) environment;
-    }
-  }
 }

@@ -1,4 +1,4 @@
-package com.github.rpc.context.netty.server;
+package com.github.rpc.context.netty.handle;
 
 import com.github.rpc.context.bean.RocketRequest;
 import com.github.rpc.context.bean.RocketResponse;
@@ -19,6 +19,7 @@ public class HeartPackHandler extends SimpleChannelInboundHandler<RocketRequest>
         RocketResponse response=new RocketResponse();
         response.setResponseId(msg.getRequestId());
         response.setResult("this is heart pack");
+        response.setIsHeartPack(true);
         ctx.writeAndFlush(response);
     }
 }

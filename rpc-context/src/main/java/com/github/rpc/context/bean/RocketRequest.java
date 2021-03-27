@@ -16,6 +16,7 @@ public class RocketRequest implements Serializable {
 
     private static final long serialVersionUID = -2625585669090924236L;
 
+
     /*请求ID*/
     private String requestId;
     /*调用class类名*/

@@ -2,16 +2,13 @@ package com.github.rpc.context.remote.discover.registry;
 
 import com.github.rpc.context.constants.Constant;
 import com.github.rpc.context.exception.RocketException;
-import com.github.rpc.context.remote.discover.abs.BaseRpcHandler;
+import com.github.rpc.context.remote.discover.base.BaseRpcHandler;
 import com.github.rpc.context.spring.annotation.RocketService;
-import com.github.rpc.context.remote.client.CuratorClient;
+import com.github.rpc.context.remote.client.ZookeeperClient;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.DisposableBean;
-import org.springframework.context.EnvironmentAware;
 import org.springframework.context.annotation.DependsOn;
-import org.springframework.core.env.ConfigurableEnvironment;
-import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Component;
 
 /**
@@ -22,9 +19,7 @@ import org.springframework.stereotype.Component;
 @Slf4j
 @Component
 @DependsOn("springBeanUtil")
-public class ZkServiceRegistry extends BaseRpcHandler
-        implements EnvironmentAware, DisposableBean {
-    private ConfigurableEnvironment env;
+public class ZkServiceRegistry extends BaseRpcHandler implements DisposableBean {
 
 
     @Override
@@ -36,12 +31,12 @@ public class ZkServiceRegistry extends BaseRpcHandler
             registryConsumer(interfaces, version);
         } else {
             //provider registry
-            registryProvider(interfaces,service, version);
+            registryProvider(service);
         }
 
     }
 
-    private void registryProvider(Class<?> interfaces, Object service, String version) {
+    private void registryProvider(Object service) {
         try {
             final RocketService sjlRpcService = service.getClass().getAnnotation(RocketService.class);
             final String v = sjlRpcService.version();
@@ -51,7 +46,7 @@ public class ZkServiceRegistry extends BaseRpcHandler
             final Class<?> infaces = sjlRpcService.value();
             boolean flag = super.isExistServiceNode(infaces.getName());
             if (!flag) {
-                super.createServicePath(CuratorClient.instance(), super.handleCacheMapServiceName(infaces.getName()));
+                super.createServicePath(ZookeeperClient.instance(super.env), super.handleCacheMapServiceName(infaces.getName()));
             }
 
         } catch (Exception e) {
@@ -68,7 +63,7 @@ public class ZkServiceRegistry extends BaseRpcHandler
                 boolean flag = super.isExistServiceNode(interfaces.getName());
                 if (!flag) {
                     super.createServicePath(
-                            CuratorClient.instance(), super.handleCacheMapServiceName(interfaces.getName()));
+                            ZookeeperClient.instance(env), super.handleCacheMapServiceName(interfaces.getName()));
                 }
             }
         } catch (Exception e) {
@@ -89,20 +84,12 @@ public class ZkServiceRegistry extends BaseRpcHandler
     public void destroy() {
         log.info("==============开始销毁缓存map,curator关闭!================");
         cacheServiceMap.clear();
-        CuratorClient.instance().close();
+        ZookeeperClient.instance(env).close();
 
     }
 
 
-    @Override
-    protected ConfigurableEnvironment getEnvironment() {
-        return this.env;
-    }
 
-    @Override
-    public void setEnvironment(Environment environment) {
-        if (environment instanceof ConfigurableEnvironment) {
-            this.env = (ConfigurableEnvironment) environment;
-        }
-    }
+
+
 }

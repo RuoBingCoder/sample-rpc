@@ -1,15 +1,13 @@
-package com.github.rpc.context.netty.abs;
+package com.github.rpc.context.netty.transport;
 
-import com.github.rpc.context.netty.server.ServerInit;
+import com.github.rpc.context.netty.init.ServerInit;
 import com.github.rpc.context.constants.Constant;
-import com.github.rpc.context.netty.service.Transporter;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.*;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
 import lombok.extern.slf4j.Slf4j;
 
-import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.concurrent.TimeUnit;
 
@@ -39,7 +37,6 @@ public abstract class BaseServerTransporter implements Transporter {
         } catch (Exception e) {
             e.printStackTrace();
         } finally {
-
             bossGroup.shutdownGracefully(); // 优雅的关闭
         }
     }

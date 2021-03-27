@@ -13,22 +13,24 @@ public class RocketContext {
 
     private final Map<String, String> attachments = new HashMap<>();
 
-    private static final ThreadLocal<RocketContext> LOCAL=new ThreadLocal<>();
+    private static final ThreadLocal<RocketContext> CONTEXT_THREAD_LOCAL = ThreadLocal.withInitial(RocketContext::new);
 
 
-
-    public static RocketContext getContext(){
-        if (LOCAL.get()==null){
-            LOCAL.set(new RocketContext());
-        }
-        return LOCAL.get();
+    public static RocketContext getContext() {
+        return CONTEXT_THREAD_LOCAL.get();
     }
 
     public Map<String, String> getAttachments() {
         return attachments;
     }
 
-    public void setAttachment(String k,String v){
-        attachments.putIfAbsent(k,v);
+    public void setAttachment(String k, String v) {
+        attachments.putIfAbsent(k, v);
+    }
+
+    public void remove() {
+        CONTEXT_THREAD_LOCAL.remove();
     }
 }
+
+

@@ -1,7 +1,7 @@
 package com.github.rpc.context.netty.client;
 
 import com.github.rpc.context.bean.RocketRequest;
-import com.github.rpc.context.netty.abs.BaseClientTransporter;
+import com.github.rpc.context.netty.transport.BaseClientTransporter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 

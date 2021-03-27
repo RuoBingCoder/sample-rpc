@@ -17,7 +17,7 @@ public class Constant {
 
   public static Map<String, AnnotationAttributes> CACHE_SERVICE_ATTRIBUTES_MAP =new ConcurrentHashMap<>();
 
-  public static String ZK_ADDRESS_PREFIX ="zk.addr";
+  public static String ZK_ADDRESS_PREFIX ="rocket.registry.address";
 
   public static String ROOT_PATH="/rocket/";
   public static final String PROVIDER = "provider";
@@ -34,6 +34,8 @@ public class Constant {
   public static final String TCP_PROTOCOL="tcp";
   public static final String HTTP_PROTOCOL="http";
   public static final String VERSION="version";
+  public static final String REGISTRY_PROTOCOL="zookeeper:";
+
 
 
 

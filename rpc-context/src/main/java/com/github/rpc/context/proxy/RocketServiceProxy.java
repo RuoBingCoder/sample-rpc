@@ -1,5 +1,7 @@
 package com.github.rpc.context.proxy;
 
+import com.alibaba.fastjson.JSONObject;
+import com.github.rpc.context.exception.RocketException;
 import com.github.rpc.context.spring.annotation.RocketReferenceAttribute;
 import lombok.extern.slf4j.Slf4j;
 
@@ -26,9 +28,12 @@ public class RocketServiceProxy<T> extends AbsRocketSupport {
     }
 
     @Override
-    public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
-        Object res = doInvoke(referenceAttribute, method, args);
-        return res;
+    public Object invoke(Object proxy, Method method, Object[] args) {
+        try {
+            return doInvoke(referenceAttribute, method, args);
+        } catch (Exception e) {
+            throw new RocketException("invoke exception method name :[" + method.getName() + "] params is:[" + JSONObject.toJSONString(args) + "] exception msg :[" + e.getMessage() + "]");
+        }
 
 
     }

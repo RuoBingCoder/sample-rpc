@@ -22,4 +22,15 @@ public class StringUtils {
         final String[] s2 = s1[1].split("&");
         return s2[1];
     }
+
+    public static String cleanLastSymbol(String source){
+        final int i = source.lastIndexOf(",");
+        final String res = source.substring(0, i);
+        return res;
+    }
+
+    public static void main(String[] args) {
+        String s="123,44,";
+        System.out.println(cleanLastSymbol(s));
+    }
 }
