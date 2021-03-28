@@ -16,7 +16,6 @@ import org.apache.curator.framework.recipes.cache.PathChildrenCacheListener;
 import org.apache.zookeeper.CreateMode;
 import org.apache.zookeeper.KeeperException;
 import org.apache.zookeeper.data.Stat;
-import org.apache.zookeeper.server.util.ConfigUtils;
 import org.springframework.context.EnvironmentAware;
 import org.springframework.core.env.ConfigurableEnvironment;
 import org.springframework.core.env.Environment;
@@ -68,26 +67,23 @@ public abstract class BaseRpcHandler implements EnvironmentAware {
      * @return
      * @throws Exception
      */
-    protected boolean isExistServiceNode(String beanName) throws Exception {
+    protected boolean isExist(String beanName) throws Exception {
         if (!"".equals(version)) {
-            return isNodeExist(beanName) && !cacheServiceMap.containsKey(handleCacheMapServiceName(beanName));
+            return !(checkNode(beanName) || cacheServiceMap.containsKey(handleCacheMapServiceName(beanName)));
         }
-        return false;
+        return true;
     }
 
-    private boolean isNodeExist(String beanName) {
+    private boolean checkNode(String beanName) {
         try {
             final Stat stat = curator
                     .checkExists()
                     .forPath(handleCurrentServicePath(handleCacheMapServiceName(beanName)));
-            if (stat != null) {
-                return true;
-            }
+            return stat==null;
         } catch (Exception e) {
             log.error("check node exist exception", e);
             throw new RocketException("check node exist exception!");
         }
-        return false;
 
     }
 

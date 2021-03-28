@@ -44,9 +44,9 @@ public class ZkServiceRegistry extends BaseRpcHandler implements DisposableBean 
             String protocol = getProtocol();
             super.version = v;
             final Class<?> infaces = sjlRpcService.value();
-            boolean flag = super.isExistServiceNode(infaces.getName());
+            boolean flag = isExist(infaces.getName());
             if (!flag) {
-                super.createServicePath(ZookeeperClient.instance(super.env), super.handleCacheMapServiceName(infaces.getName()));
+                createServicePath(ZookeeperClient.instance(env), handleCacheMapServiceName(infaces.getName()));
             }
 
         } catch (Exception e) {
@@ -60,7 +60,7 @@ public class ZkServiceRegistry extends BaseRpcHandler implements DisposableBean 
             //consumer registry
             if (interfaces != null && !isService) {
                 this.version = version;
-                boolean flag = super.isExistServiceNode(interfaces.getName());
+                boolean flag = isExist(interfaces.getName());
                 if (!flag) {
                     super.createServicePath(
                             ZookeeperClient.instance(env), super.handleCacheMapServiceName(interfaces.getName()));
