@@ -23,11 +23,11 @@ public class FastThreadLocalDemo {
 
     public static void main(String[] args) {
         final FastThreadLocalDemo threadLocalDemo = FastThreadLocalDemo.instance();
-        new FastThreadLocalThread(() -> {
-             Object obj = threadLocalDemo.fastThreadLockTest.get();
+        new Thread(() -> {
+//             Object obj = threadLocalDemo.fastThreadLockTest.get();
             try {
                 for (int i = 0; i < 10; i++) {
-                    threadLocalDemo.fastThreadLockTest.set(new Object());
+                    threadLocalDemo.fastThreadLockTest.set(i+"");
                     Thread.sleep(2000);
                 }
             } catch (Exception e) {
@@ -36,12 +36,12 @@ public class FastThreadLocalDemo {
         }).start();
 
 
-        new FastThreadLocalThread(() -> {
-            Object obj = threadLocalDemo.fastThreadLockTest.get();
+        new Thread(() -> {
+//            Object obj = threadLocalDemo.fastThreadLockTest.get();
             try {
                 for (int i = 0; i < 10; i++) {
                     Object shareObj = threadLocalDemo.fastThreadLockTest.get();
-                    System.out.println("===>"+obj.equals(shareObj));
+                    System.out.println("===>"+shareObj);
                     Thread.sleep(1000);
 
                 }

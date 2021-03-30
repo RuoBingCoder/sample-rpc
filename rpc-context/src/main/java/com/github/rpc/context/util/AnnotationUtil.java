@@ -141,51 +141,82 @@ public class AnnotationUtil {
         return resolvedValue;
     }
 
+    /**
+     * get方法注释属性
+     *
+     * @param method 方法
+     * @return {@link Map<String, Object> }
+     * @author jianlei.shi
+     * @date 2021-03-30 14:41:47
+     */
+    public static Map<String, Object> getMethodAnnotationAttributes(Method method) {
+        Annotation[] annotations;
+        ReflectUtils.setAccessible(method);
+        annotations = method.getDeclaredAnnotations();
+        return buildAnnotationAttributes(annotations);
+
+    }
+
+    /**
+     * 构建注释属性
+     *
+     * @param annotations 注释
+     * @return {@link Map<String, Object> }
+     * @author jianlei.shi
+     * @date 2021-03-30 14:43:06
+     */
+    private static Map<String, Object> buildAnnotationAttributes(Annotation[] annotations) {
+        Map<String, Object> annotationAttributes = new HashMap<>();
+        if (annotations.length > 0) {
+            for (java.lang.annotation.Annotation annotation : annotations) {
+                putAttrToMap(annotation, annotationAttributes);
+            }
+            return annotationAttributes;
+        }
+        return annotationAttributes;
+    }
+
+    /**
+     * 获取字段注释属性
+     *
+     * @param field 字段
+     * @return {@link Map<String, Object> }
+     * @author jianlei.shi
+     * @date 2021-03-30 14:36:02
+     */
+    public static Map<String, Object> getFieldAnnotationAttributes(Field field) {
+        Annotation[] annotations;
+        ReflectUtils.setAccessible(field);
+        annotations = field.getDeclaredAnnotations();
+        return buildAnnotationAttributes(annotations);
+    }
 
     /**
      * 自定义 获取注解属性
      *
-     * @param field          场
-     * @param classes        类
-     * @param annotationType 注释类型
+     * @param annotation 注释类型
      * @return {@link Map<String, Object> }
      * @author jianlei.shi
      * @date 2021-03-21 16:07:36
      */
-    public static Map<String, Object> getAnnotationAttributes(Object obj, Class<? extends Annotation> annotationType) {
-        Annotation[] annotations = null;
-        if (obj instanceof Field){
-            Field field= (Field) obj;
-            field.setAccessible(true);
-            annotations = field.getDeclaredAnnotations();
-        } else if (obj instanceof Class){
-            Class<?> clazz= (Class<?>) obj;
-            annotations = clazz.getAnnotations();
-        }
+    public static Map<String, Object> getAnnotationAttributes(Annotation annotation) {
         Map<String, Object> annotationAttributes = new HashMap<>();
-        assert annotations != null;
-        if (annotations.length > 0) {
-            for (java.lang.annotation.Annotation annotation : annotations) {
-                if (annotation.annotationType() == annotationType) {
-                    putAttrToMap(annotation, annotationAttributes);
-                }
-            }
-        }
+        putAttrToMap(annotation, annotationAttributes);
         return annotationAttributes;
     }
 
     private static void putAttrToMap(java.lang.annotation.Annotation target, Map<String, Object> annotationAttributes) {
         final Method[] methods = target.annotationType().getDeclaredMethods();
-        if (methods.length > 0){
+        if (methods.length > 0) {
             for (Method method : methods) {
-                if ("toString".equals(method.getName())|| "hashCode".equals(method.getName())){
+                if ("toString".equals(method.getName()) || "hashCode".equals(method.getName()) || "equals".equals(method.getName())) {
                     continue;
                 }
                 try {
                     final Object res = method.invoke(target, EMPTY_OBJECT_ARRAY);
-                    annotationAttributes.put(method.getName(),res);
+                    annotationAttributes.put(method.getName(), res);
                 } catch (Exception e) {
-                    throw new RocketException("putAttrToMap error  "+e.getMessage());
+                    throw new RocketException("putAttrToMap error  " + e.getMessage());
                 }
 
             }

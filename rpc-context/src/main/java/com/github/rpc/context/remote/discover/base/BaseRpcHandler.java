@@ -37,9 +37,13 @@ import java.util.concurrent.ConcurrentHashMap;
 @Slf4j
 public abstract class BaseRpcHandler implements EnvironmentAware {
     protected static final Map<String, List<String>> cacheServiceMap = new ConcurrentHashMap<>();
+
     public static BaseLoadBalance loadBalance;
+
     private CuratorFramework curator;
+
     protected volatile Boolean isService;
+
     protected volatile String version;
 
     protected ConfigurableEnvironment env;
@@ -79,7 +83,7 @@ public abstract class BaseRpcHandler implements EnvironmentAware {
             final Stat stat = curator
                     .checkExists()
                     .forPath(handleCurrentServicePath(handleCacheMapServiceName(beanName)));
-            return stat==null;
+            return stat == null;
         } catch (Exception e) {
             log.error("check node exist exception", e);
             throw new RocketException("check node exist exception!");
@@ -174,26 +178,25 @@ public abstract class BaseRpcHandler implements EnvironmentAware {
         String serviceNameSpace = handleCacheMapServiceName(request.getClassName());
         //hosts
         List<String> services = null;
-        try {
-            final String serviceNodePath = serviceRegistryPath(serviceNameSpace, request.getVersion());
-            services = curator.getChildren().forPath(serviceNodePath);
-            String fileName = System.getProperty("user.home") + "/rocket-rpc/provider_" + request.getVersion() + ".cache";
-            if (StringUtils.isNotBlank(fileName)) {
-                file = new File(fileName);
-                if (!file.exists() && file.getParentFile() != null && !file.getParentFile().exists()) {
-                    if (!file.getParentFile().mkdirs()) {
-                        throw new IllegalArgumentException("Invalid registry cache file " + file + ", cause: Failed to create directory " + file.getParentFile() + "!");
-                    }
+        final String serviceNodePath = serviceRegistryPath(serviceNameSpace, request.getVersion());
+        String fileName = System.getProperty("user.home") + "/rocket-rpc/provider_" + request.getVersion() + ".cache";
+        if (StringUtils.isNotBlank(fileName)) {
+            file = new File(fileName);
+            if (!file.exists() && file.getParentFile() != null && !file.getParentFile().exists()) {
+                if (!file.getParentFile().mkdirs()) {
+                    throw new IllegalArgumentException("Invalid registry cache file " + file + ", cause: Failed to create directory " + file.getParentFile() + "!");
                 }
             }
-            loadProperties();
-            if (CollectionUtil.isEmpty(services)) {
-                services = getCacheServicesByKey(serviceNodePath);
-            }
-            saveProperties(serviceNodePath, request.getVersion(), services);
-        } catch (Exception e) {
-
         }
+        loadProperties();
+        try {
+            services = curator.getChildren().forPath(serviceNodePath);
+        } catch (Exception e) {
+            log.error("get zookeeper node exception!", e);
+            services = getCacheServicesByKey(serviceNodePath);
+        }
+        saveProperties(serviceNodePath, request.getVersion(), services);
+
         // 先进行负载
         // 1.首先判断服务名是否存在, 2.在判断IP是否存在
         loadBalance = SpringBeanUtil.getBean(BaseLoadBalance.class);
@@ -295,7 +298,7 @@ public abstract class BaseRpcHandler implements EnvironmentAware {
                     List<String> services =
                             curator.getChildren().forPath(serviceRegistryPath(serviceNameSpace, version));
                     //update local cache
-                    saveProperties(serviceRegistryPath(serviceNameSpace, version),version,services);
+                    saveProperties(serviceRegistryPath(serviceNameSpace, version), version, services);
                     cacheServiceMap.put(serviceNameSpace, services);
                 };
         pathChildrenCache.getListenable().addListener(listener);

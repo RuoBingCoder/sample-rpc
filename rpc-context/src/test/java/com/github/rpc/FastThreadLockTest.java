@@ -8,11 +8,11 @@ import io.netty.util.concurrent.FastThreadLocal;
  * @description FastThreadLockTest
  */
 
-public class FastThreadLockTest extends FastThreadLocal<Object> {
+public class FastThreadLockTest extends FastThreadLocal<String> {
 
     @Override
-    protected Object initialValue() throws Exception {
-        return new Object();
+    protected String initialValue() throws Exception {
+        return "1";
     }
 
     @Override

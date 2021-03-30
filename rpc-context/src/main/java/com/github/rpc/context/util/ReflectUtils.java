@@ -2,6 +2,7 @@ package com.github.rpc.context.util;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 
 /**
  * @author jianlei.shi
@@ -19,8 +20,8 @@ public class ReflectUtils {
         throw new IllegalArgumentException("type is non null!");
     }
 
-    public static <T> T getAnnotation(Field field, Class<? extends Annotation> annotationType) {
-        return (T) field.getAnnotation(annotationType);
+    public static <T extends Annotation> T getAnnotation(Field field, Class<T> annotationType) {
+        return field.getAnnotation(annotationType);
 
     }
 
@@ -32,5 +33,15 @@ public class ReflectUtils {
             }
         }
         return false;
+    }
+
+    public static void setAccessible(Object obj) {
+        if (obj instanceof Field) {
+            Field field = (Field) obj;
+            field.setAccessible(true);
+        } else if (obj instanceof Method) {
+            Method method = (Method) obj;
+            method.setAccessible(true);
+        }
     }
 }

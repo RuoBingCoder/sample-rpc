@@ -1,6 +1,7 @@
 package com.github.rpc.context.config;
 
 import com.github.rpc.context.constants.Constant;
+import com.github.rpc.context.exception.RocketException;
 import com.github.rpc.context.factory.RocketServiceFactory;
 import com.github.rpc.context.remote.discover.registry.ZkServiceRegistry;
 import com.github.rpc.context.spring.annotation.RocketReference;
@@ -51,7 +52,8 @@ public class ReferenceConfigBean<T> {
                 init();
             }
         } catch (Exception e) {
-
+            log.error("ReferenceConfigBean init exception,",e);
+            throw new RocketException("ReferenceConfigBean init exception");
         } finally {
             lock.unlock();
         }

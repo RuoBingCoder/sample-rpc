@@ -3,7 +3,9 @@ package com.github.rpc.context.bean;
 import lombok.Data;
 
 import java.io.Serializable;
+import java.util.Arrays;
 import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
@@ -56,5 +58,6 @@ public class RocketRequest implements Serializable {
         rpcAttachments.putAll(rat);
 
     }
+
 
 }

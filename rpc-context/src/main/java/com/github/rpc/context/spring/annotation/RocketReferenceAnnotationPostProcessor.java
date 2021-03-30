@@ -63,9 +63,7 @@ public class RocketReferenceAnnotationPostProcessor implements BeanPostProcessor
                          } else {
                              log.info("开始<创建缓存> bean name:{}", beanName);
                              Object proxy = registryRefConfigBean(field.getType(), reference);
-                             field.set(
-                                     bean,
-                                     proxy);
+                             field.set(bean, proxy);
                              CACHE_REFS.putIfAbsent(field.getType(), proxy);
                          }
                      } catch (Exception e) {
@@ -78,12 +76,12 @@ public class RocketReferenceAnnotationPostProcessor implements BeanPostProcessor
 
     private Object registryRefConfigBean(Class<?> type, RocketReference reference) {
         if (beanFactory instanceof DefaultListableBeanFactory) {
-            DefaultListableBeanFactory defaultListableBeanFactory = (DefaultListableBeanFactory) beanFactory;
+            DefaultListableBeanFactory beanFactory = (DefaultListableBeanFactory) this.beanFactory;
             ReferenceConfigBean referenceConfigBean = new ReferenceConfigBean();
             referenceConfigBean.setInterfaces(type);
             referenceConfigBean.setRocketReference(reference);
             referenceConfigBean.setEnvironment(environment);
-            defaultListableBeanFactory.registerSingleton(type.getSimpleName(), referenceConfigBean);
+            beanFactory.registerSingleton(type.getSimpleName(), referenceConfigBean);
             return referenceConfigBean.get();
 
         }

@@ -36,14 +36,23 @@ public abstract class AbsRocketSupport implements InvocationHandler {
         String className = method.getDeclaringClass().getName();
         String methodName = method.getName();
         String version = referenceAttribute.getVersion();
-        RocketResponse response;
+        RocketResponse response = null;
+
         try {
             RocketRequest request = getRequest(method, args, referenceAttribute);
             Object protocol = ProtocolFactory.getProtocol(referenceAttribute.getProtocol());
             if (protocol instanceof RocketNettyProtocol) {
-                doHandleTask(protocol, request);
-                response = NettyChannel.getAndRemoveResp(request.getRequestId());
-                log.info("-->>>>>>>>response result is:{}", response.getResult());
+                int retries = 0;
+                while (retries < 3) {
+                    doHandleTask(protocol, request);
+                    response = NettyChannel.getAndRemoveResp(request.getRequestId());
+                    log.info("-->>>>>>>>response result is:{}", response.getResult());
+                    if (response.getError() != null) {
+                        retries++;
+                    } else {
+                        return response.getResult();
+                    }
+                }
                 return response.getResult();
             } else if (protocol instanceof RocketHttpProtocol) {
                 //todo

@@ -12,7 +12,18 @@ import java.util.Map;
 public class RocketContext {
 
     private final Map<String, String> attachments = new HashMap<>();
-
+    /**
+     * <code>
+     * ThreadLocalMap(ThreadLocal<?> firstKey, Object firstValue) {
+     * table = new Entry[INITIAL_CAPACITY];
+     * int i = firstKey.threadLocalHashCode & (INITIAL_CAPACITY - 1); 计算index 使用hash计算比较慢而FastThreadLocal 则使用自增索引 用空间换时间比较快
+     * table[i] = new Entry(firstKey, firstValue);
+     * size = 1;
+     * setThreshold(INITIAL_CAPACITY);
+     * </code>
+     *
+     * @see io.netty.util.concurrent.FastThreadLocal
+     */
     private static final ThreadLocal<RocketContext> CONTEXT_THREAD_LOCAL = ThreadLocal.withInitial(RocketContext::new);
 
 
@@ -21,6 +32,7 @@ public class RocketContext {
     }
 
     public Map<String, String> getAttachments() {
+        remove(); //防止内存泄漏
         return attachments;
     }
 
@@ -28,7 +40,7 @@ public class RocketContext {
         attachments.putIfAbsent(k, v);
     }
 
-    public void remove() {
+    public static void remove() {
         CONTEXT_THREAD_LOCAL.remove();
     }
 }

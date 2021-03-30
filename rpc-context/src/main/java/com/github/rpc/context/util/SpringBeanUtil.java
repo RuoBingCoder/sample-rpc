@@ -1,6 +1,7 @@
 package com.github.rpc.context.util;
 
 import cn.hutool.core.collection.CollectionUtil;
+import com.alibaba.fastjson.JSONObject;
 import com.github.rpc.context.spring.annotation.RocketService;
 import com.google.gson.Gson;
 import lombok.extern.slf4j.Slf4j;
@@ -22,47 +23,35 @@ import java.util.concurrent.ConcurrentHashMap;
 @Slf4j
 public class SpringBeanUtil implements ApplicationContextAware {
 
-  private static ApplicationContext applicationContext;
+    private static ApplicationContext applicationContext;
 
-  @Override
-  public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
-    SpringBeanUtil.applicationContext = applicationContext;
-  }
+    @Override
+    public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
+        SpringBeanUtil.applicationContext = applicationContext;
+    }
 
-
-  public static ConcurrentHashMap<String, Object> getBeansByAnnotation(Class<? extends Annotation>  clazz) {
-    ConcurrentHashMap<String, Object> handlerMap = new ConcurrentHashMap<>();
-    try {
-      if (clazz != null) {
-        Map<String, Object> beans = SpringBeanUtil.applicationContext.getBeansWithAnnotation(clazz);
-        log.info("========beans 是:{}",new Gson().toJson(beans));
-        if (CollectionUtil.isNotEmpty(beans)) {
-          for (Object bean : beans.values()) {
-            String interFaceName =
-                bean.getClass().getAnnotation(RocketService.class).value().getName();
-
-            handlerMap.put(interFaceName, bean);
-          }
-          return handlerMap;
+    public static ConcurrentHashMap<String, Object> getBeansByAnnotation(Class<? extends Annotation> clazz) {
+        ConcurrentHashMap<String, Object> serviceMapping = new ConcurrentHashMap<>();
+        try {
+            if (clazz != null) {
+                Map<String, Object> beans = SpringBeanUtil.applicationContext.getBeansWithAnnotation(clazz);
+//        log.info("========beans 是:{}", JSONObject.toJSONString(beans));
+                if (CollectionUtil.isNotEmpty(beans)) {
+                    for (Object bean : beans.values()) {
+                        String interFaceName = bean.getClass().getAnnotation(RocketService.class).value().getName();
+                        serviceMapping.putIfAbsent(interFaceName, bean);
+                    }
+                    return serviceMapping;
+                }
+            }
+        } catch (Exception e) {
+            log.error("获取bean出现异常", e);
         }
-      }
-    } catch (Exception e) {
-      log.error("获取bean出现异常", e);
+        return new ConcurrentHashMap<>();
     }
-    return new ConcurrentHashMap<>();
-  }
 
-  public static <T> T getBean(Class<?> type){
-    return (T) SpringBeanUtil.applicationContext.getBean(type);
-  }
-
-  public static void main(String[] args) throws ClassNotFoundException, InterruptedException {
-      if (true) {
-        byte[] placeHolder = new byte[64 * 1024 * 1024];
-        System.out.println(placeHolder.length / 1024);
-      }
-      int replacer = 1;
-      System.gc();
-      Thread.sleep(100000);
+    public static <T> T getBean(Class<T> type) {
+        return SpringBeanUtil.applicationContext.getBean(type);
     }
+
 }
