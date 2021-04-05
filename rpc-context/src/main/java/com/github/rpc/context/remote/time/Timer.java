@@ -40,8 +40,7 @@ public class Timer {
         this.thread = threadFactory.newThread(new Task(request, timeout, responses));
     }
 
-    public void
-    start() {
+    public void start() {
         try {
             thread.start();
         } catch (Exception e) {
