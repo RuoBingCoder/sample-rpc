@@ -8,6 +8,7 @@ import javassist.bytecode.annotation.Annotation;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 /**
  * @author: JianLei
@@ -28,6 +29,11 @@ public class GoodsServiceImpl implements IGoodsService {
 
   @Override
   public String helloRpc(String var) {
+   /* try {
+//      Thread.sleep(4000);
+    } catch (InterruptedException e) {
+      e.printStackTrace();
+    }*/
     return "hello:"+var;
   }
 

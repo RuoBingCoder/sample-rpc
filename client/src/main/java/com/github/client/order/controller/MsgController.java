@@ -21,28 +21,28 @@ import java.util.List;
 @RequestMapping("/msg")
 @Slf4j
 public class MsgController {
-  @RocketReference(value = IGoodsService.class, version = "1.0.1")
-  private IGoodsService iGoodsService;
+    @RocketReference(value = IGoodsService.class, version = "1.0.1", timeout = 2000)
+    private IGoodsService iGoodsService;
 
-  @RocketReference(value = IProductService.class, version = "1.0.1")
-  private IProductService iProductService;
+    @RocketReference(value = IProductService.class, version = "1.0.1")
+    private IProductService iProductService;
 
-  //  @Autowired
-  //  private RpcServiceTest rpcServiceTest;
-  @GetMapping("/getOrder")
-  public String getMsg() {
-    List<Goods> goodsById = iGoodsService.getGoodsById(1000L);
-    log.info("*******Goods is:{}", new Gson().toJson(goodsById));
-    return "success";
-  }
+    //  @Autowired
+    //  private RpcServiceTest rpcServiceTest;
+    @GetMapping("/getOrder")
+    public String getMsg() {
+        List<Goods> goodsById = iGoodsService.getGoodsById(1000L);
+        log.info("*******Goods is:{}", new Gson().toJson(goodsById));
+        return "success";
+    }
 
-  @GetMapping("/hello")
-  public String hello() {
-    return iGoodsService.helloRpc("rpc");
-  }
+    @GetMapping("/hello")
+    public String hello() {
+        return iGoodsService.helloRpc("rpc");
+    }
 
-  @GetMapping(value = "/product", name = "product")
-  public String product() {
-    return iProductService.count(12L) + "";
-  }
+    @GetMapping(value = "/product", name = "product")
+    public String product() {
+        return iProductService.count(12L) + "";
+    }
 }

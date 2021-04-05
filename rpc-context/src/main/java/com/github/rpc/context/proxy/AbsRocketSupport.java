@@ -35,7 +35,6 @@ public abstract class AbsRocketSupport implements InvocationHandler {
     protected Object doInvoke(RocketReferenceAttribute referenceAttribute, Method method, Object[] args) {
         String className = method.getDeclaringClass().getName();
         String methodName = method.getName();
-        String version = referenceAttribute.getVersion();
         RocketResponse response = null;
 
         try {
@@ -124,6 +123,7 @@ public abstract class AbsRocketSupport implements InvocationHandler {
         request.setParameters(args);
         request.setParameterTypes(method.getParameterTypes());
         request.setVersion(referenceAttribute.getVersion());
+        request.setTimeout(referenceAttribute.getTimeout());
         return request;
 
     }

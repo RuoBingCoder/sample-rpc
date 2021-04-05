@@ -79,7 +79,7 @@ public class ReferenceConfigBean<T> {
 
     private Object buildRocketService(Class<?> tyClass, String protocol, RocketReference reference) {
         return new RocketServiceFactory<>(tyClass, new RocketReferenceAttribute(
-                tyClass, reference.version(), reference.group(), tyClass.getSimpleName(), protocol)).getObject();
+                tyClass, reference.version(), reference.group(), tyClass.getSimpleName(), protocol,reference.timeout())).getObject();
     }
 
     private String getVersion(RocketReference reference) {

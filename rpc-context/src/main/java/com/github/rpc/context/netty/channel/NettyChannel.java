@@ -6,6 +6,7 @@ import com.github.rpc.context.bean.RocketRequest;
 import com.github.rpc.context.bean.RocketResponse;
 import com.github.rpc.context.exception.RocketException;
 import com.github.rpc.context.filter.DelegateFilterInvoker;
+import com.github.rpc.context.remote.time.Timer;
 import io.netty.channel.Channel;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.cglib.reflect.FastClass;
@@ -69,8 +70,11 @@ public class NettyChannel {
     public void receive(RocketResponse response) {
         if (!response.getIsHeartPack()) {
             final LinkedBlockingQueue<RocketResponse> queue = RESPONSE_META.get(response.getResponseId());
-            if (!queue.offer(response)) {
+            if (queue != null && !queue.offer(response)) {
                 throw new RocketException("queue offer exception");
+            }else {
+                //ignore res
+                log.error("###service invoke timeout!");
             }
         }
     }
@@ -94,7 +98,8 @@ public class NettyChannel {
 
     public static void putReqId(String id) {
         try {
-            RESPONSE_META.put(id, new LinkedBlockingQueue<>(1));
+            final LinkedBlockingQueue<RocketResponse> queue = new LinkedBlockingQueue<>(1);
+            RESPONSE_META.put(id, queue);
         } catch (Exception e) {
             throw new RocketException("putReqId exception");
         }
@@ -176,11 +181,26 @@ public class NettyChannel {
     public static void send(Channel channel, RocketRequest request) {
         try {
             putReqId(request.getRequestId());
+            checkTimeout(request);
             channel.writeAndFlush(request).sync();
         } catch (Exception e) {
-
+            log.error("send msg exception!", e);
+            throw new RocketException("send msg exception!");
         }
 
+    }
+
+    private static void checkTimeout(RocketRequest request) {
+        final LinkedBlockingQueue<RocketResponse> queue = RESPONSE_META.get(request.getRequestId());
+        Timer timer = new Timer(request, getTimeout(request), queue);
+        timer.start();
+    }
+
+    private static Integer getTimeout(RocketRequest request) {
+        if (request.getTimeout() == null) {
+            return 1000;
+        }
+        return request.getTimeout();
     }
 
 }

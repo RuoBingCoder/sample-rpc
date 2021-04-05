@@ -15,6 +15,16 @@ public class RocketReferenceAttribute {
     private String group;
     private String name;
     private String protocol;
+    private Integer timeout;
+
+    public RocketReferenceAttribute(Class<?> clazz, String version, String group, String name, String protocol, Integer timeout) {
+        this.clazz = clazz;
+        this.version = version;
+        this.group = group;
+        this.name = name;
+        this.protocol = protocol;
+        this.timeout = timeout;
+    }
 
     public RocketReferenceAttribute(Class<?> clazz, String version, String group, String name) {
         this.clazz = clazz;

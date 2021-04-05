@@ -7,9 +7,12 @@ import java.lang.annotation.*;
 @Documented
 public @interface RocketReference {
     Class<?> value() ;
+
     String name() default "";
 
     String version() default "";
 
     String group() default "";
+
+    int timeout() default 0;
 }

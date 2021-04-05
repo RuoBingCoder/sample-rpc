@@ -45,6 +45,11 @@ public class RocketRequest implements Serializable {
     private final Map<String, String> rpcAttachments = new ConcurrentHashMap<>();
 
 
+    /**
+     * 超时时间
+     */
+    private Integer timeout;
+
     public void setAttachment(String key, String value) {
         rpcAttachments.putIfAbsent(key, value);
 
