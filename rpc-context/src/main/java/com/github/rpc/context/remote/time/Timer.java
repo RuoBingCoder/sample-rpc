@@ -31,7 +31,7 @@ public class Timer {
 
     private Thread thread;
 
-    private final ThreadFactory threadFactory = new ThreadFactoryBuilder().setDaemon(false).setNameFormat("simple-rpc-task-").build();
+    private final ThreadFactory threadFactory = new ThreadFactoryBuilder().setDaemon(true).setNameFormat("simple-rpc-task-%s").build();
 
     public Timer(RocketRequest request, Integer timeout, LinkedBlockingQueue<RocketResponse> responses) {
         this.request = request;
@@ -40,7 +40,8 @@ public class Timer {
         this.thread = threadFactory.newThread(new Task(request, timeout, responses));
     }
 
-    public void start() {
+    public void
+    start() {
         try {
             thread.start();
         } catch (Exception e) {
